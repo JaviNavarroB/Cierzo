@@ -47,6 +47,8 @@ Utilizamos las siguientes tecnologías:
 
 - **Front-End:**
   - [React Native](https://reactnative.dev/) con Expo
+  - [![Aprende Expo: ](https://img.youtube.com/vi/m1-bc53EGh8/0.jpg)](https://www.youtube.com/watch?v=m1-bc53EGh8)
+
   - HTML, CSS y JavaScript/TypeScript
 - **Back-End:**
   - [Node.js](https://nodejs.org/)
