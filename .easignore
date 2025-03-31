@@ -1,0 +1,13 @@
+**/AppData/Local/ElevatedDiagnostics/**
+**/AppData/Local/Temp/**
+# Ignore Chrome IndexedDB and temporary files
+**/AppData/Local/Google/Chrome/
+**/AppData/Local/Temp/
+# Ignore system files and folders
+AppData/
+node_modules/
+.expo/
+.android/
+.ios/
+AppData/Local/Temp/
+AppData/Local/Temp/
