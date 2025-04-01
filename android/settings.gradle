@@ -12,6 +12,13 @@ dependencyResolutionManagement {
   repositories {
     google()
     mavenCentral()
+    maven { url "https://jitpack.io" }
+    maven { 
+      url(new File(["node", "--print", "require.resolve('react-native/package.json')"].execute(null, rootDir).text.trim(), "../android"))
+    }
+    maven {
+      url(new File(["node", "--print", "require.resolve('jsc-android/package.json', { paths: [require.resolve('react-native/package.json')] })"].execute(null, rootDir).text.trim(), "../dist"))
+    }
   }
 }
 extensions.configure(com.facebook.react.ReactSettingsExtension) { ex ->
