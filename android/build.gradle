@@ -60,9 +60,17 @@ allprojects {
 project(':expo-modules-core') {
     configurations.all {
         resolutionStrategy {
-            force "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion",
-                  "org.jetbrains.kotlin:kotlin-stdlib-common:$kotlinVersion",
-                  "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
+            eachDependency { details ->
+                if (details.requested.group == "org.jetbrains.kotlin" &&
+                    (!details.requested.version || details.requested.version.trim() == "")) {
+                    details.useTarget "org.jetbrains.kotlin:${details.requested.name}:$kotlinVersion"
+                }
+            }
+            force(
+                "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion",
+                "org.jetbrains.kotlin:kotlin-stdlib-common:$kotlinVersion",
+                "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
+            )
         }
     }
 }
