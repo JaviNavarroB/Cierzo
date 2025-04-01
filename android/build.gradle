@@ -16,7 +16,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.10"
         classpath('com.android.tools.build:gradle')
         classpath('com.facebook.react:react-native-gradle-plugin')
     }
@@ -28,11 +28,11 @@ allprojects {
     configurations.all {
         resolutionStrategy {
             force(
-                "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion",
-                "org.jetbrains.kotlin:kotlin-stdlib-common:$kotlinVersion",
-                "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion",
-                "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion",
-                "org.jetbrains.kotlin:kotlin-annotations-jvm:$kotlinVersion"
+                "org.jetbrains.kotlin:kotlin-stdlib:1.8.10",
+                "org.jetbrains.kotlin:kotlin-stdlib-common:1.8.10",
+                "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.10",
+                "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.10",
+                "org.jetbrains.kotlin:kotlin-annotations-jvm:1.8.10"
             )
             eachDependency { details ->
                 if (details.requested.group == 'org.jetbrains.kotlin') {
