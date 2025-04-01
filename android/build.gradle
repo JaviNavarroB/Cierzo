@@ -23,6 +23,7 @@ buildscript {
         classpath "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
         classpath "org.jetbrains.kotlin:kotlin-stdlib-common:$kotlinVersion"
         classpath "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.5.10"
     }
 }
 
