@@ -6,7 +6,7 @@ buildscript {
         minSdkVersion = Integer.parseInt(findProperty('android.minSdkVersion') ?: '24')
         compileSdkVersion = Integer.parseInt(findProperty('android.compileSdkVersion') ?: '35')
         targetSdkVersion = Integer.parseInt(findProperty('android.targetSdkVersion') ?: '34')
-        kotlinVersion = '1.8.10'
+        kotlinVersion = '1.8.22'  // Update to a compatible version
 
         ndkVersion = "26.1.10909125"
         jvmTarget = '17'
@@ -16,7 +16,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.10"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
         classpath('com.android.tools.build:gradle')
         classpath('com.facebook.react:react-native-gradle-plugin')
     }
@@ -27,16 +27,9 @@ apply plugin: "com.facebook.react.rootproject"
 allprojects {
     configurations.all {
         resolutionStrategy {
-            force(
-                "org.jetbrains.kotlin:kotlin-stdlib:1.8.10",
-                "org.jetbrains.kotlin:kotlin-stdlib-common:1.8.10",
-                "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.10",
-                "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.10",
-                "org.jetbrains.kotlin:kotlin-annotations-jvm:1.8.10"
-            )
             eachDependency { details ->
                 if (details.requested.group == 'org.jetbrains.kotlin') {
-                    details.useVersion(kotlinVersion)
+                    details.useVersion '1.8.22'  // Use string literal instead of variable
                 }
             }
         }
