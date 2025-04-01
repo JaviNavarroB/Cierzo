@@ -48,6 +48,39 @@ allprojects {
                                    version: kotlinVersion
                 }
             }
+            force(
+                "org.jetbrains.kotlin:kotlin-stdlib:${kotlinVersion}",
+                "org.jetbrains.kotlin:kotlin-stdlib-common:${kotlinVersion}",
+                "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}",
+                "org.jetbrains.kotlin:kotlin-stdlib-jdk7:${kotlinVersion}",
+                "org.jetbrains.kotlin:kotlin-annotations-jvm:${kotlinVersion}"
+            )
+            failOnVersionConflict()
+        }
+    }
+}
+
+subprojects {
+    afterEvaluate { project ->
+        if (project.plugins.hasPlugin('kotlin-android')) {
+            project.android {
+                kotlinOptions {
+                    jvmTarget = "17"
+                    suppressWarnings = true
+                }
+            }
+        }
+        
+        project.configurations.all {
+            resolutionStrategy {
+                force(
+                    "org.jetbrains.kotlin:kotlin-stdlib:${kotlinVersion}",
+                    "org.jetbrains.kotlin:kotlin-stdlib-common:${kotlinVersion}",
+                    "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}",
+                    "org.jetbrains.kotlin:kotlin-stdlib-jdk7:${kotlinVersion}",
+                    "org.jetbrains.kotlin:kotlin-annotations-jvm:${kotlinVersion}"
+                )
+            }
         }
     }
 }
