@@ -40,9 +40,13 @@ allprojects {
     }
     configurations.all {
         resolutionStrategy {
-            eachDependency { DependencyResolveDetails details ->
+            eachDependency { details ->
                 if (details.requested.group == "org.jetbrains.kotlin") {
-                    details.useVersion "$kotlinVersion"
+                    if (!details.requested.version || details.requested.version.trim().isEmpty()) {
+                        details.useVersion "$kotlinVersion"
+                    } else {
+                        details.useVersion "$kotlinVersion"
+                    }
                 }
             }
             // Force specific Kotlin stdlib dependencies with the defined kotlinVersion.
