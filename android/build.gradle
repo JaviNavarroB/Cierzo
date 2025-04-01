@@ -47,17 +47,12 @@ allprojects {
                 "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion",
                 "org.jetbrains.kotlin:kotlin-annotations-jvm:$kotlinVersion"
             )
-            failOnVersionConflict()
         }
     }
-}
 
-subprojects {
-    afterEvaluate { project ->
-        if (project.plugins.hasPlugin('kotlin-android')) {
-            kotlin {
-                jvmToolchain(17)
-            }
+    plugins.withId('kotlin-android') {
+        kotlin {
+            jvmToolchain(17)
         }
     }
 }
