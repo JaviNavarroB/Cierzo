@@ -6,7 +6,7 @@ buildscript {
         minSdkVersion = Integer.parseInt(findProperty('android.minSdkVersion') ?: '24')
         compileSdkVersion = Integer.parseInt(findProperty('android.compileSdkVersion') ?: '35')
         targetSdkVersion = Integer.parseInt(findProperty('android.targetSdkVersion') ?: '34')
-        kotlinVersion = findProperty('android.kotlinVersion') ?: '1.9.24'
+        kotlinVersion = '1.9.24'
 
         ndkVersion = "26.1.10909125"
         jvmTarget = '17'
@@ -19,11 +19,6 @@ buildscript {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
         classpath('com.android.tools.build:gradle')
         classpath('com.facebook.react:react-native-gradle-plugin')
-        // Add explicit Kotlin stdlib dependencies
-        classpath "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
-        classpath "org.jetbrains.kotlin:kotlin-stdlib-common:$kotlinVersion"
-        classpath "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.5.10"
     }
 }
 
@@ -45,32 +40,10 @@ allprojects {
         maven { url 'https://www.jitpack.io' }
     }
     configurations.all {
-        resolutionStrategy {
-            // Remove the dependencySubstitution block
-            // dependencySubstitution {
-            //     substitute(module("org.jetbrains.kotlin:kotlin-stdlib")).using(module("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"))
-            //     substitute(module("org.jetbrains.kotlin:kotlin-stdlib-common")).using(module("org.jetbrains.kotlin:kotlin-stdlib-common:$kotlinVersion"))
-            //     substitute(module("org.jetbrains.kotlin:kotlin-stdlib-jdk8")).using(module("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"))
-            //     substitute(module("org.jetbrains.kotlin:kotlin-stdlib-jdk7")).using(module("org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"))
-            // }
-        }
-    }
-}
-
-project(':expo-modules-core') {
-    configurations.all {
-        resolutionStrategy {
-            eachDependency { details ->
-                if (details.requested.group == "org.jetbrains.kotlin" &&
-                    (!details.requested.version || details.requested.version.trim() == "")) {
-                    details.useTarget "org.jetbrains.kotlin:${details.requested.name}:$kotlinVersion"
-                }
+        resolutionStrategy.eachDependency { details ->
+            if (details.requested.group == 'org.jetbrains.kotlin') {
+                details.useVersion kotlinVersion
             }
-            force(
-                "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion",
-                "org.jetbrains.kotlin:kotlin-stdlib-common:$kotlinVersion",
-                "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
-            )
         }
     }
 }
