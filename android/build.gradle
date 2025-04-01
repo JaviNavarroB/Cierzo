@@ -18,6 +18,10 @@ buildscript {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
         classpath('com.android.tools.build:gradle')
         classpath('com.facebook.react:react-native-gradle-plugin')
+        // Add explicit Kotlin dependencies
+        classpath "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+        classpath "org.jetbrains.kotlin:kotlin-stdlib-common:$kotlinVersion"
+        classpath "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
     }
 }
 
@@ -42,24 +46,9 @@ allprojects {
         resolutionStrategy {
             eachDependency { details ->
                 if (details.requested.group == "org.jetbrains.kotlin") {
-                    if (!details.requested.version || details.requested.version.trim().isEmpty()) {
-                        details.useVersion "$kotlinVersion"
-                    } else {
-                        details.useVersion "$kotlinVersion"
-                    }
+                    details.useVersion kotlinVersion
                 }
             }
-            dependencySubstitution {
-                substitute module('org.jetbrains.kotlin:kotlin-stdlib') with module("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
-                substitute module('org.jetbrains.kotlin:kotlin-stdlib-common') with module("org.jetbrains.kotlin:kotlin-stdlib-common:$kotlinVersion")
-                substitute module('org.jetbrains.kotlin:kotlin-stdlib-jdk8') with module("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion")
-                substitute module('org.jetbrains.kotlin:kotlin-annotations-jvm') with module("org.jetbrains.kotlin:kotlin-annotations-jvm:$kotlinVersion")
-            }
-            // Force specific Kotlin stdlib dependencies with the defined kotlinVersion.
-            force "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion",
-                  "org.jetbrains.kotlin:kotlin-stdlib-common:$kotlinVersion",
-                  "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion",
-                  "org.jetbrains.kotlin:kotlin-annotations-jvm:$kotlinVersion"
         }
     }
 }
