@@ -19,6 +19,10 @@ buildscript {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
         classpath('com.android.tools.build:gradle')
         classpath('com.facebook.react:react-native-gradle-plugin')
+        // Add explicit Kotlin stdlib dependencies
+        classpath "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+        classpath "org.jetbrains.kotlin:kotlin-stdlib-common:$kotlinVersion"
+        classpath "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
     }
 }
 
@@ -41,19 +45,18 @@ allprojects {
     }
     configurations.all {
         resolutionStrategy {
-            eachDependency { details ->
-                if (details.requested.group == "org.jetbrains.kotlin" &&
-                    (!details.requested.version || details.requested.version.trim() == "")) {
-                    details.useTarget "org.jetbrains.kotlin:${details.requested.name}:$kotlinVersion"
-                }
+            dependencySubstitution {
+                substitute(module("org.jetbrains.kotlin:kotlin-stdlib")).using(module("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"))
+                substitute(module("org.jetbrains.kotlin:kotlin-stdlib-common")).using(module("org.jetbrains.kotlin:kotlin-stdlib-common:$kotlinVersion"))
+                substitute(module("org.jetbrains.kotlin:kotlin-stdlib-jdk8")).using(module("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"))
+                substitute(module("org.jetbrains.kotlin:kotlin-stdlib-jdk7")).using(module("org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"))
             }
-            force(
-                "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion",
-                "org.jetbrains.kotlin:kotlin-stdlib-common:$kotlinVersion",
-                "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion",
-                "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion",
-                "org.jetbrains.kotlin:kotlin-annotations-jvm:$kotlinVersion"
-            )
         }
+    }
+    
+    dependencies {
+        implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+        implementation "org.jetbrains.kotlin:kotlin-stdlib-common:$kotlinVersion"
+        implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
     }
 }
