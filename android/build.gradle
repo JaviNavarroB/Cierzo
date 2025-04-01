@@ -49,6 +49,12 @@ allprojects {
                     }
                 }
             }
+            dependencySubstitution {
+                substitute module('org.jetbrains.kotlin:kotlin-stdlib') with module("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
+                substitute module('org.jetbrains.kotlin:kotlin-stdlib-common') with module("org.jetbrains.kotlin:kotlin-stdlib-common:$kotlinVersion")
+                substitute module('org.jetbrains.kotlin:kotlin-stdlib-jdk8') with module("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion")
+                substitute module('org.jetbrains.kotlin:kotlin-annotations-jvm') with module("org.jetbrains.kotlin:kotlin-annotations-jvm:$kotlinVersion")
+            }
             // Force specific Kotlin stdlib dependencies with the defined kotlinVersion.
             force "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion",
                   "org.jetbrains.kotlin:kotlin-stdlib-common:$kotlinVersion",
