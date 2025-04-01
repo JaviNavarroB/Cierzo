@@ -18,10 +18,6 @@ buildscript {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
         classpath('com.android.tools.build:gradle')
         classpath('com.facebook.react:react-native-gradle-plugin')
-        // Add explicit Kotlin dependencies
-        classpath "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
-        classpath "org.jetbrains.kotlin:kotlin-stdlib-common:$kotlinVersion"
-        classpath "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
     }
 }
 
@@ -44,10 +40,23 @@ allprojects {
     }
     configurations.all {
         resolutionStrategy {
-            eachDependency { details ->
-                if (details.requested.group == "org.jetbrains.kotlin") {
-                    details.useVersion kotlinVersion
-                }
+            force(
+                "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion",
+                "org.jetbrains.kotlin:kotlin-stdlib-common:$kotlinVersion",
+                "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion",
+                "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion",
+                "org.jetbrains.kotlin:kotlin-annotations-jvm:$kotlinVersion"
+            )
+            failOnVersionConflict()
+        }
+    }
+}
+
+subprojects {
+    afterEvaluate { project ->
+        if (project.plugins.hasPlugin('kotlin-android')) {
+            kotlin {
+                jvmToolchain(17)
             }
         }
     }
