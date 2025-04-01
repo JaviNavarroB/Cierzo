@@ -1,7 +1,0 @@
-[versions]
-kotlin = "1.9.24"
-
-[libraries]
-kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
-kotlin-stdlib-common = { module = "org.jetbrains.kotlin:kotlin-stdlib-common", version.ref = "kotlin" }
-kotlin-stdlib-jdk8 = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8", version.ref = "kotlin" }
