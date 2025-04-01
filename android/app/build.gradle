@@ -174,7 +174,8 @@ dependencies {
         implementation jscFlavor
     }
 
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-common:$kotlinVersion"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
+    // Remove the explicit Kotlin dependencies
+    // implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+    // implementation "org.jetbrains.kotlin:kotlin-stdlib-common:$kotlinVersion"
+    // implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
 }

@@ -45,12 +45,13 @@ allprojects {
     }
     configurations.all {
         resolutionStrategy {
-            dependencySubstitution {
-                substitute(module("org.jetbrains.kotlin:kotlin-stdlib")).using(module("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"))
-                substitute(module("org.jetbrains.kotlin:kotlin-stdlib-common")).using(module("org.jetbrains.kotlin:kotlin-stdlib-common:$kotlinVersion"))
-                substitute(module("org.jetbrains.kotlin:kotlin-stdlib-jdk8")).using(module("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"))
-                substitute(module("org.jetbrains.kotlin:kotlin-stdlib-jdk7")).using(module("org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"))
-            }
+            // Remove the dependencySubstitution block
+            // dependencySubstitution {
+            //     substitute(module("org.jetbrains.kotlin:kotlin-stdlib")).using(module("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"))
+            //     substitute(module("org.jetbrains.kotlin:kotlin-stdlib-common")).using(module("org.jetbrains.kotlin:kotlin-stdlib-common:$kotlinVersion"))
+            //     substitute(module("org.jetbrains.kotlin:kotlin-stdlib-jdk8")).using(module("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"))
+            //     substitute(module("org.jetbrains.kotlin:kotlin-stdlib-jdk7")).using(module("org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"))
+            // }
         }
     }
 }
