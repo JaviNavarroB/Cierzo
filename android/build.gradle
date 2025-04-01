@@ -41,11 +41,6 @@ allprojects {
             }
         }
     }
-plugins {
-  id("com.android.application")
-  id("org.jetbrains.kotlin.android")
-  // ...
-}
 
     plugins.withType(org.jetbrains.kotlin.gradle.plugin.KotlinAndroidPluginWrapper) {
         android {
