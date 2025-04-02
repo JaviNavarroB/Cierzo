@@ -32,7 +32,6 @@ android {
             signingConfig signingConfigs.debug
         }
         release {
-            // In production, generate your own keystore.
             signingConfig signingConfigs.debug
             shrinkResources (findProperty('android.enableShrinkResourcesInReleaseBuilds')?.toBoolean() ?: false)
             minifyEnabled enableProguardInReleaseBuilds
@@ -56,13 +55,10 @@ android {
         targetCompatibility JavaVersion.VERSION_17
     }
 
-    // If you're using Kotlin, ensure the JDK target matches.
     kotlinOptions {
         jvmTarget = "17"
         suppressWarnings = true
     }
-
-    // (The rest of your configuration remains unchanged.)
 }
 
 dependencies {
