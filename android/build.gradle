@@ -6,7 +6,7 @@ buildscript {
         minSdkVersion = Integer.parseInt(findProperty('android.minSdkVersion') ?: '24')
         compileSdkVersion = Integer.parseInt(findProperty('android.compileSdkVersion') ?: '35')
         targetSdkVersion = Integer.parseInt(findProperty('android.targetSdkVersion') ?: '35')
-        kotlinVersion = '1.7.10'  // Update version
+        kotlinVersion = '1.7.10'  // Updated Kotlin version
 
         ndkVersion = "26.1.10909125"
         jvmTarget = '17'
@@ -16,28 +16,64 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.10"
-    classpath "com.android.tools.build:gradle:7.6.0"  // Use a version compatible with Gradle 7.6
-    classpath "com.facebook.react:react-native-gradle-plugin"  // Ensure this plugin is up-to-date
-}
-
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.10"
+        classpath "com.android.tools.build:gradle:7.6.0"  // Plugin compatible with Gradle 7.6
+        classpath "com.facebook.react:react-native-gradle-plugin"  // Ensure this is up-to-date
+    }
 }
 
 android {
-    compileSdkVersion 35
+    // The following block applies only to the Android module.
+    compileSdkVersion compileSdkVersion
     defaultConfig {
         applicationId "my.cierzo.app"
-        minSdkVersion 24
-        targetSdkVersion 35
+        minSdkVersion minSdkVersion
+        targetSdkVersion targetSdkVersion
+        versionCode 1
+        versionName "1.0.0"
     }
-    // Configure Java compatibility in compileOptions only for the Android module.
+    
+    // Configure Java compatibility only for this module.
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    // Optionally, if you have Kotlin settings:
+    
+    // Ensure Kotlin is compiled to target JDK 17.
     kotlinOptions {
         jvmTarget = "17"
+    }
+    
+    ndkVersion ndkVersion
+
+    // Other configuration (signing, build types, packaging, etc.) remains unchanged.
+    signingConfigs {
+        debug {
+            storeFile file('debug.keystore')
+            storePassword 'android'
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+        }
+    }
+    buildTypes {
+        debug {
+            signingConfig signingConfigs.debug
+        }
+        release {
+            signingConfig signingConfigs.debug
+            shrinkResources (findProperty('android.enableShrinkResourcesInReleaseBuilds')?.toBoolean() ?: false)
+            minifyEnabled (findProperty('android.enableProguardInReleaseBuilds')?.toBoolean() ?: false)
+            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+            crunchPngs (findProperty('android.enablePngCrunchInReleaseBuilds')?.toBoolean() ?: true)
+        }
+    }
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging (findProperty('expo.useLegacyPackaging')?.toBoolean() ?: false)
+        }
+    }
+    androidResources {
+        ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:!CVS:!thumbs.db:!picasa.ini:!*~'
     }
 }
 
@@ -48,12 +84,13 @@ allprojects {
         resolutionStrategy {
             eachDependency { details ->
                 if (details.requested.group == 'org.jetbrains.kotlin') {
-                    details.useVersion '1.7.10'  // Update version
+                    details.useVersion '1.7.10'
                 }
             }
         }
     }
 
+    // This block ensures that any Kotlin plugins applied in subprojects use the correct JVM target.
     plugins.withType(org.jetbrains.kotlin.gradle.plugin.KotlinAndroidPluginWrapper) {
         android {
             kotlinOptions {
