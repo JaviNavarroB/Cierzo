@@ -47,11 +47,7 @@ android {
         ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:!CVS:!thumbs.db:!picasa.ini:!*~'
     }
     
-    // Add compileOptions here to set language level just for this module
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
+   
 
     // If you're using Kotlin, ensure the JDK target matches.
     kotlinOptions {
