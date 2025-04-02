@@ -47,13 +47,14 @@ android {
     }
 
     androidResources {
-        ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:!CVS:!thumbs.db:!picasa.ini:!*~'
+        ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:!CVS:!thumbs.db:!picasa.ini:!~'
     }
-    
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
-    }
+
+    // Removed compileOptions block to avoid toolchain conflicts
+    //compileOptions {
+    //    sourceCompatibility JavaVersion.VERSION_17
+    //    targetCompatibility JavaVersion.VERSION_17
+    //}
 
     kotlinOptions {
         jvmTarget = "17"
