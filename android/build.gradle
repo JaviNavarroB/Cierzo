@@ -23,6 +23,24 @@ buildscript {
 
 }
 
+android {
+    compileSdkVersion 35
+    defaultConfig {
+        applicationId "my.cierzo.app"
+        minSdkVersion 24
+        targetSdkVersion 35
+    }
+    // Configure Java compatibility in compileOptions only for the Android module.
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+    // Optionally, if you have Kotlin settings:
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+}
+
 apply plugin: "com.facebook.react.rootproject"
 
 allprojects {
