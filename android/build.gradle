@@ -15,11 +15,7 @@ buildscript {
         google()
         mavenCentral()
     }
-    dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.10"
-        classpath "com.android.tools.build:gradle:7.6.0"  // Plugin compatible with Gradle 7.6
-        
-}
+    
 
 android {
     // The following block applies only to the Android module.
