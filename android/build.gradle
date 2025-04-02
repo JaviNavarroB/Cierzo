@@ -18,8 +18,7 @@ buildscript {
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.10"
         classpath "com.android.tools.build:gradle:7.6.0"  // Plugin compatible with Gradle 7.6
-        classpath "com.facebook.react:react-native-gradle-plugin"  // Ensure this is up-to-date
-    }
+        
 }
 
 android {
