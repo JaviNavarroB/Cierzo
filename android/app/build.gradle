@@ -64,3 +64,7 @@ android {
 
     // (The rest of your configuration remains unchanged.)
 }
+
+dependencies {
+    // ...existing dependencies...
+}

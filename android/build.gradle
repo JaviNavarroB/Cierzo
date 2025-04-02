@@ -9,7 +9,6 @@ buildscript {
         kotlinVersion = '1.7.10'  // Updated Kotlin version
 
         ndkVersion = "26.1.10909125"
-        jvmTarget = '17'
     }
     repositories {
         google()
@@ -31,16 +30,6 @@ allprojects {
                 if (details.requested.group == 'org.jetbrains.kotlin') {
                     details.useVersion '1.7.10'
                 }
-            }
-        }
-    }
-
-    // This block ensures that any Kotlin plugins applied in subprojects use the correct JVM target.
-    plugins.withType(org.jetbrains.kotlin.gradle.plugin.KotlinAndroidPluginWrapper) {
-        android {
-            kotlinOptions {
-                jvmTarget = "17"
-                suppressWarnings = true
             }
         }
     }
