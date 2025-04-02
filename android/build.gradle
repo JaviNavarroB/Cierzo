@@ -22,58 +22,6 @@ buildscript {
     }
 }
 
-android {
-    // The following block applies only to the Android module.
-    compileSdkVersion compileSdkVersion
-    defaultConfig {
-        applicationId "my.cierzo.app"
-        minSdkVersion minSdkVersion
-        targetSdkVersion targetSdkVersion
-        versionCode 1
-        versionName "1.0.0"
-    }
-    
-    // Configure Java compatibility only for this module.
-   
-    
-    // Ensure Kotlin is compiled to target JDK 17.
-    kotlinOptions {
-        jvmTarget = "17"
-    }
-    
-    ndkVersion ndkVersion
-
-    // Other configuration (signing, build types, packaging, etc.) remains unchanged.
-    signingConfigs {
-        debug {
-            storeFile file('debug.keystore')
-            storePassword 'android'
-            keyAlias 'androiddebugkey'
-            keyPassword 'android'
-        }
-    }
-    buildTypes {
-        debug {
-            signingConfig signingConfigs.debug
-        }
-        release {
-            signingConfig signingConfigs.debug
-            shrinkResources (findProperty('android.enableShrinkResourcesInReleaseBuilds')?.toBoolean() ?: false)
-            minifyEnabled (findProperty('android.enableProguardInReleaseBuilds')?.toBoolean() ?: false)
-            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
-            crunchPngs (findProperty('android.enablePngCrunchInReleaseBuilds')?.toBoolean() ?: true)
-        }
-    }
-    packagingOptions {
-        jniLibs {
-            useLegacyPackaging (findProperty('expo.useLegacyPackaging')?.toBoolean() ?: false)
-        }
-    }
-    androidResources {
-        ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:!CVS:!thumbs.db:!picasa.ini:!*~'
-    }
-}
-
 apply plugin: "com.facebook.react.rootproject"
 
 allprojects {

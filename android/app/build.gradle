@@ -1,3 +1,7 @@
+apply plugin: "com.android.application"
+apply plugin: "org.jetbrains.kotlin.android"
+apply plugin: "com.facebook.react"
+
 android {
     ndkVersion rootProject.ext.ndkVersion
 
@@ -47,11 +51,15 @@ android {
         ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:!CVS:!thumbs.db:!picasa.ini:!*~'
     }
     
-   
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
 
     // If you're using Kotlin, ensure the JDK target matches.
     kotlinOptions {
         jvmTarget = "17"
+        suppressWarnings = true
     }
 
     // (The rest of your configuration remains unchanged.)
