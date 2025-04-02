@@ -15,7 +15,12 @@ buildscript {
         google()
         mavenCentral()
     }
-    
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.10"
+        classpath "com.android.tools.build:gradle:7.6.0"  // Plugin compatible with Gradle 7.6
+        classpath "com.facebook.react:react-native-gradle-plugin"  // Ensure this is up-to-date
+    }
+}
 
 android {
     // The following block applies only to the Android module.
@@ -29,10 +34,7 @@ android {
     }
     
     // Configure Java compatibility only for this module.
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
+   
     
     // Ensure Kotlin is compiled to target JDK 17.
     kotlinOptions {
