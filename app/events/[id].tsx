@@ -466,7 +466,7 @@ export default function EventScreen() {
             <GallerySlider />
           </View>
           <View style={styles.sectionContainer}>
-            <Text style={[styles.sectionTitle, { marginTop: 48 }]}>
+            <Text style={[styles.sectionTitle, { marginTop: 0 }]}>
               Testimonios
             </Text>
             {eventData.testimonios?.map((testimonios: any, index: number) => (

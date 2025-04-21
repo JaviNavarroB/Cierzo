@@ -3,5 +3,6 @@ export type RootStackParamList = {
     event: undefined;
     index: undefined;
     deporte: undefined;
+    about: undefined;
     // ... add any other routes you use
   };

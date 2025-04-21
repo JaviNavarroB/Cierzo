@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   logo: {
-    fontFamily: "DancingScript-Bold",
+    fontFamily: "DancingScript_700Bold",
     fontSize: 40,
     fontWeight: "bold",
     textAlign: "center",

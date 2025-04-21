@@ -22,6 +22,7 @@
   "type": "commonjs",
   "description": "",
   "dependencies": {
+    "@expo-google-fonts/dancing-script": "^0.3.0",
     "@expo-google-fonts/inter": "^0.2.3",
     "@expo-google-fonts/lobster": "^0.2.3",
     "@expo-google-fonts/raleway": "^0.2.3",
@@ -63,7 +64,8 @@
     "react-native-reanimated-carousel": "^4.0.2",
     "react-native-safe-area-context": "^4.12.0",
     "react-native-screens": "~4.4.0",
-    "react-native-svg": "15.8.0",
+    "react-native-svg": "^15.11.2",
+    "react-native-svg-web": "^1.0.9",
     "react-native-web": "~0.19.13",
     "react-native-webview": "13.12.5",
     "sequelize": "^6.37.5",
@@ -73,6 +75,7 @@
   "devDependencies": {
     "@babel/core": "^7.25.2",
     "@babel/preset-react": "^7.26.3",
+    "@svgr/webpack": "^8.1.0",
     "@types/bcrypt": "^5.0.2",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
@@ -96,7 +99,6 @@
     "typescript": "^5.7.3"
   },
   "private": true,
-  
   "expo": {
     "doctor": {
       "reactNativeDirectoryCheck": {
@@ -108,5 +110,3 @@
     }
   }
 }
-
-

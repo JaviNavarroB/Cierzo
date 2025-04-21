@@ -11,14 +11,13 @@ module.exports = (async () => {
     ...config,
     transformer: {
       ...config.transformer,
-      // Opciones de transformación para Metro
       getTransformOptions: async () => ({
         transform: {
           experimentalImportSupport: false,
           inlineRequires: true,
         },
       }),
-      // Usa el transformer para archivos SVG
+      // Añade el transformer de SVG
       babelTransformerPath: require.resolve("react-native-svg-transformer"),
       assetPlugins: ["expo-asset/tools/hashAssetFiles"],
     },
@@ -26,11 +25,10 @@ module.exports = (async () => {
       ...config.resolver,
       extraNodeModules: {
         ...config.resolver.extraNodeModules,
-        // Asegura que React se resuelva correctamente
         react: path.resolve(__dirname, "./node_modules/react"),
       },
-      // Excluye "svg" de assetExts y agrégalo a sourceExts
-      assetExts: assetExts.filter((ext) => ext !== "svg").concat(["png", "jpg"]),
+      // Excluye .svg de assetExts y agrégalo a sourceExts
+      assetExts: assetExts.filter(ext => ext !== "svg").concat(["png", "jpg"]),
       sourceExts: [...sourceExts, "cjs", "svg"],
     },
   };
