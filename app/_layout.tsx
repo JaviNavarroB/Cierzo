@@ -13,7 +13,7 @@ import { useEffect } from "react";
 import "react-native-reanimated";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Platform } from "react-native";
-//import * as NavigationBar from "expo-navigation-bar";
+import * as NavigationBar from "expo-navigation-bar";
 import { COLORS } from "@/constants/theme"; // added for color reference
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
