@@ -4,11 +4,13 @@ import {
   TouchableOpacity,
   Platform,
   Text,
+  Image,
 } from "react-native";
 import { Menu } from "lucide-react-native";
 import { COLORS } from "@/constants/theme";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "@/@types/routes.types";
+import React from "react";
 interface HeaderMenuProps {
   isDark?: boolean;
 }
@@ -26,9 +28,13 @@ export function HeaderMenu({ isDark = false }: HeaderMenuProps) {
     <View style={styles.container}>
       <View style={[styles.header, { backgroundColor: headerBackground }]}>
         <View>
-          <View>
+          {/*<View>
             <Text style={[styles.logo, { color: logoColor }]}>Cierzo</Text>
-          </View>
+          </View>*/}
+          <Image
+            source={require("../assets/images/LogoLetras.png")}
+            style={styles.logo}
+          />
         </View>
         <TouchableOpacity
           style={styles.menuButton}
@@ -60,16 +66,22 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   logo: {
-    fontFamily: "DancingScript_700Bold",
-    fontSize: 40,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginTop: 25,
+    //fontFamily: "DancingScript_700Bold",
+    //fontSize: 40,
+    //fontWeight: "bold",
+    //textAlign: "center",
+
+    objectFit: "contain",
+    width: 150,
+    height: 50,
+    top: 10,
+    color: COLORS.text.black,
+    tintColor: COLORS.text.light,
   },
   menuButton: {
     position: "absolute",
     right: 20,
-    top: Platform.OS === "ios" ? 50 : 17,
+    top: Platform.OS === "ios" ? 50 : 50,
     width: 28,
     height: 28,
     justifyContent: "center",

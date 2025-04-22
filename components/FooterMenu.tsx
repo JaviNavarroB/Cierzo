@@ -27,7 +27,6 @@ export function FooterMenu({ style, isDark = false }: FooterMenuProps) {
   const navigation = useNavigation<Navigation>();
   const insets = useSafeAreaInsets();
   const { width: FOOTER_WIDTH } = useWindowDimensions();
-
   const FOOTER_HEIGHT = 130;
   const CIRCLE_DIAMETER = 76;
   const CENTER_X = FOOTER_WIDTH / 2;
@@ -61,27 +60,31 @@ export function FooterMenu({ style, isDark = false }: FooterMenuProps) {
             <ClipPath id="cut-out-circle" clipPathUnits="userSpaceOnUse">
               <Path
                 d={`
-                  M 0,20
-                  H ${CENTER_X - CIRCLE_RADIUS - CURVE_ADJUSTMENT}
-                  Q ${CENTER_X - CIRCLE_RADIUS} 20, ${
-                  CENTER_X - CIRCLE_RADIUS
-                } ${20 + CURVE_ADJUSTMENT}
-                  A ${CIRCLE_RADIUS} ${CIRCLE_RADIUS} 0 1 0 ${
+            M 0,15
+            Q 0,0,20,0
+
+            H ${CENTER_X - CIRCLE_RADIUS - CURVE_ADJUSTMENT}
+            Q ${CENTER_X - CIRCLE_RADIUS},0,${CENTER_X - CIRCLE_RADIUS},20
+
+            A ${CIRCLE_RADIUS} ${CIRCLE_RADIUS} 0 1 0 ${
                   CENTER_X + CIRCLE_RADIUS
-                } ${20 + CURVE_ADJUSTMENT}
-                  Q ${CENTER_X + CIRCLE_RADIUS} 20, ${
+                },20
+
+            Q ${CENTER_X + CIRCLE_RADIUS},0,${
                   CENTER_X + CIRCLE_RADIUS + CURVE_ADJUSTMENT
-                } 20
-                  H ${FOOTER_WIDTH}
-                  V ${FOOTER_HEIGHT}
-                  H 0
-                  Z
-                `}
+                },0
+            H ${FOOTER_WIDTH - 20}
+            Q ${FOOTER_WIDTH},0,${FOOTER_WIDTH},15
+
+            V ${FOOTER_HEIGHT}
+            H 0
+            Z
+          `}
               />
             </ClipPath>
           </Defs>
 
-          <G clipPath="url(#cut-out-circle)">
+          <G clipPath="url(#cut-out-circle)" transform={`translate(0, 15)`}>
             <Rect
               x={0}
               y={0}
@@ -118,13 +121,13 @@ export function FooterMenu({ style, isDark = false }: FooterMenuProps) {
         ]}
       >
         <TouchableOpacity
-          style={styles.iconButton}
+          style={styles.homeButton}
           onPress={() => navigation.navigate("index")}
         >
           <Home size={34} color={iconColor} />
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.iconButton, { marginRight: -10 }]}
+          style={[styles.userButton, { marginRight: -10 }]}
           onPress={() => navigation.navigate("deporte")}
         >
           <User size={30} color={iconColor} />
@@ -136,10 +139,9 @@ export function FooterMenu({ style, isDark = false }: FooterMenuProps) {
 
 const styles = StyleSheet.create({
   container: {
-    position: "absolute",
     left: 0,
     right: 0,
-    height: 122,
+    height: 108,
   },
   footerContainer: {
     position: "absolute",
@@ -198,17 +200,21 @@ const styles = StyleSheet.create({
     position: "absolute",
     height: 90,
     left: 0,
-    top: 22,
+    top: 50,
     right: 0,
     flexDirection: "row",
+    zIndex: 3,
+    width: "100%",
     justifyContent: "space-between",
-    alignItems: "center",
-    zIndex: 1,
   },
-  iconButton: {
+  homeButton: {
     width: 37,
     height: 34,
-    justifyContent: "center",
-    alignItems: "center",
+    left: 165,
+  },
+  userButton: {
+    width: 37,
+    height: 34,
+    right: 165,
   },
 });
