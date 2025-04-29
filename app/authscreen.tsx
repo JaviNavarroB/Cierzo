@@ -48,7 +48,7 @@ const AuthScreen: React.FC = () => {
         console.log("Attempting login...");
         await loginUser({
           Correo: email,
-          Contraseña: password,
+          Contrasenya: password,
         });
         console.log("Login successful");
         await new Promise((resolve) => setTimeout(resolve, 100));
