@@ -1,19 +1,27 @@
 import React from "react";
-import { StyleSheet, View, Text, ScrollView, Dimensions, Image, Platform } from "react-native";
+import {
+  StyleSheet,
+  View,
+  Text,
+  ScrollView,
+  Dimensions,
+  Image,
+  Platform,
+} from "react-native";
 
-const windowWidth = Dimensions.get('window').width;
-const isMobile = Platform.OS !== 'web' || windowWidth < 768;
+const windowWidth = Dimensions.get("window").width;
+const isMobile = Platform.OS !== "web" || windowWidth < 768;
 
 // Sample data for players (example with 2 real + 4 placeholders)
 const players = [
   {
     id: "1",
-    image: require('../assets/images/Player1.jpeg'),
+    image: require("../assets/images/Player1.jpeg"),
     name: "Player 1",
   },
   {
     id: "2",
-    image: require('../assets/images/Player1.jpeg'),
+    image: require("../assets/images/Player1.jpeg"),
     name: "Player 2",
   },
   // Placeholder cards
@@ -29,7 +37,9 @@ const players = [
 export function PlayersSlider() {
   return (
     <View style={styles.container}>
-      <Text style={[styles.title, isMobile && styles.titleMobile]}>Miembros</Text>
+      <Text style={[styles.title, isMobile && styles.titleMobile]}>
+        Miembros
+      </Text>
 
       <ScrollView
         horizontal
@@ -68,31 +78,31 @@ const styles = StyleSheet.create({
     display: "flex",
   },
   title: {
-    fontFamily: "GT-America-Trial",
+    fontFamily: "GTAmericaTrial",
     fontWeight: "900",
     fontSize: 60,
     lineHeight: 75,
     color: "#BB4B36",
-    marginLeft: Platform.select({ web: 117, default: 24 }),
-    marginBottom: Platform.select({ web: 20, default: 16 }),
+    marginLeft: 24,
+    marginBottom: 16,
   },
   titleMobile: {
     fontSize: 40,
     lineHeight: 50,
   },
-    scrollContainer: {
-      marginTop: 32,
-    paddingLeft: Platform.select({ web: 117, default: 24 }),
-    paddingRight: Platform.select({ web: 26, default: 24 }),
+  scrollContainer: {
+    marginTop: 32,
+    paddingLeft: 24,
+    paddingRight: 24,
   },
   scrollContainerMobile: {
     paddingLeft: 24,
     paddingRight: 24,
   },
   card: {
-    width: Platform.select({ web: 263, default: 200 }),
-    height: Platform.select({ web: 352, default: 280 }),
-    marginRight: Platform.select({ web: 26, default: 16 }),
+    width: 220,
+    height: 280,
+    marginRight: 16,
     borderRadius: 15,
     overflow: "hidden",
   },

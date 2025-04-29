@@ -15,6 +15,9 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Platform } from "react-native";
 import * as NavigationBar from "expo-navigation-bar";
 import { COLORS } from "@/constants/theme"; // added for color reference
+import { Slot } from "expo-router";
+import { authProviderExported as AuthProvider } from "../contexts/AuthContext";
+import React from "react";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -25,7 +28,7 @@ export default function RootLayout() {
     DancingScript: require("../assets/fonts/DancingScript-VariableFont_wght.ttf"),
     DancingScript_Bold: require("../assets/fonts/DancingScript-Bold.otf"),
     // Added custom GT-America fonts for Android support
-    GTAmericaTrial: require("../assets/fonts/GT-America-Standard-Regular-Trial.otf"),
+    GTAmericaTrial: require("../assets/fonts/GT-America-Standard-Black-Trial.otf"),
     GTAmericaCompressedBlackTrial: require("../assets/fonts/GT-America-Compressed-Black-Trial.otf"),
     GTAmericaCondensedBoldTrial: require("../assets/fonts/GT-America-Condensed-Bold-Trial.otf"),
     Inter_400Regular,
@@ -49,14 +52,9 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="index" />
-        <Stack.Screen name="deporte" />
-        <Stack.Screen name="profile" />
-        <Stack.Screen name="events/[id]" />
-        <Stack.Screen name="about" />
-      </Stack>
-      <StatusBar style="dark" backgroundColor="#BB4B36" />
+      <AuthProvider>
+        <Slot />
+      </AuthProvider>
     </GestureHandlerRootView>
   );
 }

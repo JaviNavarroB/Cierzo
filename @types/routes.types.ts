@@ -4,5 +4,7 @@ export type RootStackParamList = {
     index: undefined;
     deporte: undefined;
     about: undefined;
+    homescreen: undefined;
+    authscreen: undefined;
     // ... add any other routes you use
   };

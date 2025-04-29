@@ -95,7 +95,7 @@ export default function Profile() {
         />
 
         <View
-          style={[styles.inputLabelEditing, { top: 266, borderWidth: 0 }]}
+          style={[styles.inputLabelEditing, { top: 265, borderWidth: 0 }]}
         />
 
         <Text style={[styles.inputLabel, { top: 266 - 8 }]}>Nombre</Text>
@@ -141,7 +141,7 @@ export default function Profile() {
           <View style={[styles.inputLabelEditing, { top: 420 }]} />
         ) : (
           <View
-            style={[styles.inputLabelEditing, { top: 420, borderWidth: 0 }]}
+            style={[styles.inputLabelEditing, { top: 419, borderWidth: 0 }]}
           />
         )}
 
@@ -175,7 +175,7 @@ export default function Profile() {
           <View style={[styles.inputLabelEditing, { top: 497 }]} />
         ) : (
           <View
-            style={[styles.inputLabelEditing, { top: 497, borderWidth: 0 }]}
+            style={[styles.inputLabelEditing, { top: 496, borderWidth: 0 }]}
           />
         )}
 
@@ -258,6 +258,7 @@ const styles = StyleSheet.create({
     color: COLORS.text.black,
     fontSize: 13,
     fontFamily: "GT America Trial",
+    zIndex: 1,
   },
 
   /* Label (80 wide), centered horizontally */
@@ -265,7 +266,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: 65,
     width: LABEL_WIDTH,
-    height: 14,
+    height: 17,
     fontFamily: "GT America Trial",
     fontSize: 11,
     lineHeight: 14,
@@ -273,6 +274,7 @@ const styles = StyleSheet.create({
     letterSpacing: -0.03,
     color: COLORS.text.dark,
     overflow: "hidden",
+    zIndex: 5,
   },
   inputLabelEditing: {
     display: "flex",
@@ -283,7 +285,8 @@ const styles = StyleSheet.create({
     letterSpacing: -0.03,
     color: COLORS.text.dark,
     overflow: "hidden",
-    backgroundColor: COLORS.text.light,
+    backgroundColor: COLORS.background,
+    zIndex: 1,
 
     // Hide top border
     borderTopWidth: 0,

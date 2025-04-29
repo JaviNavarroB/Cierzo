@@ -42,6 +42,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
+    marginTop: 45,
   },
   footerMenu: {
     position: "absolute",

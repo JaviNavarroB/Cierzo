@@ -15,11 +15,9 @@ import Carousel, {
 import { COLORS } from "@/constants/theme";
 
 // Define dimensions and proportions similar to EventsSlider.tsx
-const windowWidth = Dimensions.get("window").width;
-const isMobile = Platform.OS !== "web" || windowWidth < 768;
-const cardWidth = isMobile ? 340 : 410;
-const cardHeight = isMobile ? 275 : 352;
-const cardMarginRight = isMobile ? 0 : 0; // new constant for spacing
+const cardWidth = 340;
+const cardHeight = 275;
+const cardMarginRight = 0;
 
 const data = [...new Array(6).keys()];
 
@@ -100,20 +98,21 @@ function GallerySlider({ scrollRef }: SportsSliderProps) {
 const styles = StyleSheet.create({
   container: {
     width: "100%",
-    height: Platform.select({ web: 488, default: 280 }),
+    height: 280,
     marginTop: 0,
 
     alignItems: "center", // new line to center the card horizontally
   },
   title: {
-    fontFamily: "GT-America-Trial",
-    fontWeight: "900",
+    fontWeight: 900,
+    fontFamily: "GT America Trial",
+
     fontSize: 60,
     lineHeight: 75,
     color: COLORS.primary,
     position: "absolute",
-    left: Platform.select({ web: 117, default: 40 }),
-    top: Platform.select({ web: 30, default: -70 }), // Adjusted top position
+    left: 40,
+    top: -70,
     zIndex: 2, // Increased to ensure it's above carousel
   },
   titleMobile: {

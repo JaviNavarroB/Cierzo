@@ -43,7 +43,7 @@ export default function SportsSlider({ scrollRef }: SportsSliderProps) {
       const widthInterpolated = interpolate(
         diff,
         [0, 1],
-        [cardWidth, cardWidth / 4],
+        [cardWidth, cardWidth / 3],
         Extrapolate.CLAMP
       );
       return { width: widthInterpolated };
@@ -100,7 +100,7 @@ export default function SportsSlider({ scrollRef }: SportsSliderProps) {
           // Slight scale for side cards
           parallaxScrollingScale: 0.9,
           // Smaller offset to keep side cards visible
-          parallaxScrollingOffset: 230,
+          parallaxScrollingOffset: 260,
         }}
         onConfigurePanGesture={(gestureChain) =>
           // changed threshold from [-30, 30] to [-10, 10] for scroll behavior like GallerySlider

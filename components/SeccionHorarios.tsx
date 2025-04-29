@@ -259,7 +259,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.background,
     marginTop: Platform.select({
-      web: 75,
+      web: 25,
       default: 0,
     }),
   },
@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingHorizontal: Platform.select({ web: 24, default: 0 }),
+    paddingHorizontal: Platform.select({ web: 0, default: 0 }),
     paddingVertical: Platform.select({ web: 24, default: 16 }),
   },
   contentMobile: {
