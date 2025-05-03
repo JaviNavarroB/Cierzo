@@ -1,90 +1,499 @@
+"use client";
+
+import { useState, useRef, useEffect } from "react";
 import {
-  StyleSheet,
   View,
+  StyleSheet,
   TouchableOpacity,
+  Animated,
+  Pressable,
   Platform,
-  Text,
   Image,
+  Text,
+  useWindowDimensions,
+  StatusBar,
 } from "react-native";
-import { Menu } from "lucide-react-native";
+import {
+  type NavigationProp,
+  useNavigation,
+  useRoute,
+} from "@react-navigation/native";
+import type { RootStackParamList } from "@/@types/routes.types";
 import { COLORS } from "@/constants/theme";
-import { NavigationProp, useNavigation } from "@react-navigation/native";
-import { RootStackParamList } from "@/@types/routes.types";
-import React from "react";
+import { Menu, X } from "lucide-react-native";
+
 interface HeaderMenuProps {
   isDark?: boolean;
 }
+
 type Navigation = NavigationProp<RootStackParamList>;
 
-const navigation = useNavigation<Navigation>();
 export function HeaderMenu({ isDark = false }: HeaderMenuProps) {
-  // En modo claro: fondo = primary (rojo) y logo = text.light (claro)
-  // En modo oscuro: fondo = text.light (claro) y logo = text.dark (oscuro)
-  const headerBackground = isDark ? COLORS.text.light : COLORS.primary;
-  const logoColor = isDark ? COLORS.text.black : COLORS.text.light;
-  const menuIconColor = isDark ? COLORS.text.black : "#FDF5EA"; // o podrías usar logoColor
+  const navigation = useNavigation<Navigation>();
+  const route = useRoute();
+  const { width } = useWindowDimensions();
+  const isDesktop = Platform.OS === "web" && width >= 768;
+
+  // Estado y animaciones
+  const [open, setOpen] = useState(false);
+  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
+  const menuAnimation = useRef(new Animated.Value(0)).current;
+  const fadeAnim = useRef(new Animated.Value(1)).current;
+  const indicatorAnim = useRef(new Animated.Value(0)).current;
+
+  // Cerrar menú al cambiar a vista desktop
+  useEffect(() => {
+    if (isDesktop && open) {
+      setOpen(false);
+    }
+  }, [isDesktop, width]);
+
+  // Determinar la ruta actual para resaltar el elemento de menú activo
+  const currentRoute = route.name as keyof RootStackParamList;
+
+  // Animación del indicador de página activa
+  useEffect(() => {
+    Animated.timing(indicatorAnim, {
+      toValue: 1,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  }, [currentRoute]);
+
+  const toggleMenu = () => {
+    setOpen((prev) => !prev);
+    Animated.timing(menuAnimation, {
+      toValue: open ? 0 : 1,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const navigate = (routeName: keyof RootStackParamList) => {
+    if (open) {
+      toggleMenu();
+    }
+
+    // Solo navegar si no estamos ya en esa ruta
+    if (currentRoute !== routeName) {
+      // Animar salida del indicador actual
+      Animated.timing(indicatorAnim, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start(() => {
+        navigation.navigate(routeName);
+      });
+    }
+  };
+
+  // Animación al hacer scroll
+  const handleScroll = (offset: number) => {
+    Animated.timing(fadeAnim, {
+      toValue: offset > 50 ? 0.95 : 1,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  // Transformaciones para animación del menú móvil
+  const translateY = menuAnimation.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-20, 0],
+  });
+
+  const opacity = menuAnimation.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 1],
+  });
+
+  // Función para manejar hover en web
+  const handleHover = (item: string | null) => {
+    if (Platform.OS === "web") {
+      setHoveredItem(item);
+    }
+  };
 
   return (
-    <View style={styles.container}>
-      <View style={[styles.header, { backgroundColor: headerBackground }]}>
-        <View>
-          {/*<View>
-            <Text style={[styles.logo, { color: logoColor }]}>Cierzo</Text>
-          </View>*/}
-          <Image
-            source={require("../assets/images/LogoLetras.png")}
-            style={styles.logo}
-          />
+    <>
+      <Animated.View
+        style={[
+          styles.container,
+          {
+            backgroundColor: COLORS.primary,
+            opacity: fadeAnim,
+          },
+        ]}
+      >
+        {/* Logo (centro) */}
+        <View style={styles.logoContainer}>
+          <TouchableOpacity
+            onPress={() => navigate("index")}
+            style={styles.logoButton}
+            onMouseEnter={() => handleHover("logo")}
+            onMouseLeave={() => handleHover(null)}
+          >
+            <Image
+              source={require("../assets/images/LogoLetras.png")}
+              style={[
+                styles.logo,
+                { tintColor: COLORS.background },
+                hoveredItem === "logo" && styles.logoHovered,
+              ]}
+            />
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity
-          style={styles.menuButton}
-          onPress={() => navigation.navigate("profile")}
-        >
-          <Menu size={28} color={menuIconColor} />
-        </TouchableOpacity>
-      </View>
-    </View>
+
+        {/* Menú de navegación para desktop */}
+        {isDesktop && (
+          <View style={styles.desktopNav}>
+            <TouchableOpacity
+              style={[styles.navItem]}
+              onPress={() => navigate("index")}
+              onMouseEnter={() => handleHover("index")}
+              onMouseLeave={() => handleHover(null)}
+            >
+              <Text
+                style={[
+                  styles.navText,
+                  currentRoute === "index" && styles.activeNavText,
+                  hoveredItem === "index" && styles.hoveredNavText,
+                ]}
+              >
+                Inicio
+              </Text>
+              {currentRoute === "index" && (
+                <Animated.View
+                  style={[
+                    styles.activeIndicator,
+                    {
+                      opacity: indicatorAnim,
+                      transform: [{ scaleX: indicatorAnim }],
+                    },
+                  ]}
+                />
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.navItem]}
+              onPress={() => navigate("about")}
+              onMouseEnter={() => handleHover("about")}
+              onMouseLeave={() => handleHover(null)}
+            >
+              <Text
+                style={[
+                  styles.navText,
+                  currentRoute === "about" && styles.activeNavText,
+                  hoveredItem === "about" && styles.hoveredNavText,
+                ]}
+              >
+                Sobre nosotros
+              </Text>
+              {currentRoute === "about" && (
+                <Animated.View
+                  style={[
+                    styles.activeIndicator,
+                    {
+                      opacity: indicatorAnim,
+                      transform: [{ scaleX: indicatorAnim }],
+                    },
+                  ]}
+                />
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.navItem]}
+              onPress={() => navigate("profile")}
+              onMouseEnter={() => handleHover("profile")}
+              onMouseLeave={() => handleHover(null)}
+            >
+              <Text
+                style={[
+                  styles.navText,
+                  currentRoute === "profile" && styles.activeNavText,
+                  hoveredItem === "profile" && styles.hoveredNavText,
+                ]}
+              >
+                Perfil
+              </Text>
+              {currentRoute === "profile" && (
+                <Animated.View
+                  style={[
+                    styles.activeIndicator,
+                    {
+                      opacity: indicatorAnim,
+                      transform: [{ scaleX: indicatorAnim }],
+                    },
+                  ]}
+                />
+              )}
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* Menú desplegable para móvil */}
+        {!isDesktop && (
+          <>
+            <View style={styles.emptySpace} />
+            <TouchableOpacity
+              style={styles.menuButton}
+              onPress={toggleMenu}
+              accessibilityLabel="Menú"
+              onMouseEnter={() => handleHover("menu")}
+              onMouseLeave={() => handleHover(null)}
+            >
+              <View
+                style={[
+                  styles.menuButtonCircle,
+                  hoveredItem === "menu" && styles.menuButtonCircleHovered,
+                  open && styles.menuButtonCircleActive,
+                ]}
+              >
+                {open ? (
+                  <X size={20} color={COLORS.primary} />
+                ) : (
+                  <Menu
+                    size={20}
+                    color={
+                      hoveredItem === "menu"
+                        ? COLORS.primary
+                        : COLORS.background
+                    }
+                  />
+                )}
+              </View>
+            </TouchableOpacity>
+          </>
+        )}
+
+        {!isDesktop && open && (
+          <View style={styles.mobileMenuContainer}>
+            {/* Backdrop */}
+            <Pressable style={styles.backdrop} onPress={toggleMenu} />
+
+            {/* Menú */}
+            <Animated.View
+              style={[
+                styles.mobileMenu,
+                {
+                  transform: [{ translateY }],
+                  opacity,
+                },
+              ]}
+            >
+              <TouchableOpacity
+                style={[
+                  styles.mobileMenuItem,
+                  currentRoute === "index" && styles.activeMobileMenuItem,
+                ]}
+                onPress={() => navigate("index")}
+              >
+                <Text
+                  style={[
+                    styles.mobileMenuText,
+                    currentRoute === "index" && styles.activeMobileMenuText,
+                  ]}
+                >
+                  Inicio
+                </Text>
+                {currentRoute === "index" && (
+                  <View style={styles.mobileMenuItemDot} />
+                )}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.mobileMenuItem,
+                  currentRoute === "about" && styles.activeMobileMenuItem,
+                ]}
+                onPress={() => navigate("about")}
+              >
+                <Text
+                  style={[
+                    styles.mobileMenuText,
+                    currentRoute === "about" && styles.activeMobileMenuText,
+                  ]}
+                >
+                  Sobre nosotros
+                </Text>
+                {currentRoute === "about" && (
+                  <View style={styles.mobileMenuItemDot} />
+                )}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.mobileMenuItem,
+                  currentRoute === "profile" && styles.activeMobileMenuItem,
+                ]}
+                onPress={() => navigate("profile")}
+              >
+                <Text
+                  style={[
+                    styles.mobileMenuText,
+                    currentRoute === "profile" && styles.activeMobileMenuText,
+                  ]}
+                >
+                  Perfil
+                </Text>
+                {currentRoute === "profile" && (
+                  <View style={styles.mobileMenuItemDot} />
+                )}
+              </TouchableOpacity>
+            </Animated.View>
+          </View>
+        )}
+      </Animated.View>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    position: "absolute",
     width: "100%",
-    height: 100,
-    left: 0,
-    top: 0,
-    zIndex: 10,
-    alignContent: "center",
-  },
-  header: {
-    position: "absolute",
-    width: "100%",
-    height: "100%",
+    height: Platform.OS === "web" ? 70 : 90, // Reduced height
+    paddingTop: Platform.OS === "web" ? 0 : 35, // Reduced top padding
     flexDirection: "row",
-    justifyContent: "center",
     alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 24,
+    zIndex: 100,
+    position: "relative",
+  },
+  // Logo
+  logoContainer: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 0,
+  },
+  logoButton: {
+    paddingVertical: 10,
   },
   logo: {
-    //fontFamily: "DancingScript_700Bold",
-    //fontSize: 40,
-    //fontWeight: "bold",
-    //textAlign: "center",
-
-    objectFit: "contain",
-    width: 150,
-    height: 50,
-    top: 10,
-    color: COLORS.text.black,
-    tintColor: COLORS.text.light,
+    width: 120,
+    height: 40,
+    resizeMode: "contain",
+    transition: "transform 0.3s ease",
   },
-  menuButton: {
-    position: "absolute",
-    right: 20,
-    top: Platform.OS === "ios" ? 50 : 50,
-    width: 28,
-    height: 28,
-    justifyContent: "center",
+  logoHovered: {
+    transform: [{ scale: 1.05 }],
+  },
+  // Espacio vacío para equilibrar el layout en móvil
+  emptySpace: {
+    width: 40,
+    height: 40,
+    zIndex: 1,
+  },
+  // Estilos para navegación desktop
+  desktopNav: {
+    flexDirection: "row",
     alignItems: "center",
+  },
+  navItem: {
+    marginLeft: 40,
+    position: "relative",
+    paddingBottom: 2, // Reduced bottom padding
+    paddingTop: 2, // Reduced top padding
+  },
+  navText: {
+    fontSize: 16,
+    color: `rgba(${COLORS.background},0.7)`,
+    fontWeight: "400",
+    letterSpacing: 0.3,
+    transition: "color 0.3s ease",
+  },
+  activeNavText: {
+    color: COLORS.background,
+    fontWeight: "500",
+  },
+  hoveredNavText: {
+    color: COLORS.background,
+  },
+  activeIndicator: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    width: "100%",
+    height: 1,
+    backgroundColor: COLORS.background,
+    transformOrigin: "left",
+  },
+  // Estilos para botón de menú móvil
+  menuButton: {
+    padding: 8,
+    zIndex: 1,
+    position: "absolute",
+    right: 24,
+  },
+  menuButtonCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: COLORS.background,
+    transition: "all 0.3s ease",
+  },
+  menuButtonCircleHovered: {
+    backgroundColor: COLORS.background,
+  },
+  menuButtonCircleActive: {
+    backgroundColor: COLORS.background,
+  },
+  // Estilos para menú móvil
+  mobileMenuContainer: {
+    position: "absolute",
+    top: Platform.OS === "web" ? 70 : 70, // Match new container height
+    left: 0,
+    right: 0,
+    zIndex: 100,
+  },
+  backdrop: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.1)",
+    zIndex: -1,
+  },
+  mobileMenu: {
+    backgroundColor: COLORS.primary,
+    paddingVertical: 16,
+    position: "relative",
+    overflow: "hidden",
+  },
+  mobileMenuItem: {
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    position: "relative",
+  },
+  activeMobileMenuItem: {
+    backgroundColor: "rgba(255,255,255,0.1)",
+  },
+  mobileMenuText: {
+    fontSize: 16,
+    color: `rgba(${COLORS.background},0.7)`,
+    letterSpacing: 0.3,
+  },
+  activeMobileMenuText: {
+    color: COLORS.background,
+    fontWeight: "500",
+  },
+  mobileMenuItemDot: {
+    position: "absolute",
+    left: 12,
+    top: "50%",
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: "transparent",
+    marginTop: -2,
   },
 });

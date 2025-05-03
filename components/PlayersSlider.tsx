@@ -1,3 +1,5 @@
+// components/PlayersSlider.tsx
+
 import React from "react";
 import {
   StyleSheet,
@@ -8,60 +10,39 @@ import {
   Image,
   Platform,
 } from "react-native";
+import { Player } from "@/hooks/usePlayers";
 
-const windowWidth = Dimensions.get("window").width;
-const isMobile = Platform.OS !== "web" || windowWidth < 768;
+interface Props {
+  players: Player[];
+}
 
-// Sample data for players (example with 2 real + 4 placeholders)
-const players = [
-  {
-    id: "1",
-    image: require("../assets/images/Player1.jpeg"),
-    name: "Player 1",
-  },
-  {
-    id: "2",
-    image: require("../assets/images/Player1.jpeg"),
-    name: "Player 2",
-  },
-  // Placeholder cards
-  ...Array(4)
-    .fill(null)
-    .map((_, i) => ({
-      id: `placeholder-${i + 1}`,
-      image: null,
-      name: `Player ${i + 3}`,
-    })),
-];
+export function PlayersSlider({ players }: Props) {
+  const windowWidth = Dimensions.get("window").width;
+  const isMobile = Platform.OS !== "web" || windowWidth < 768;
 
-export function PlayersSlider() {
   return (
     <View style={styles.container}>
       <Text style={[styles.title, isMobile && styles.titleMobile]}>
         Miembros
       </Text>
-
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={[
-          styles.scrollContainer,
-          isMobile && styles.scrollContainerMobile,
-        ]}
+        contentContainerStyle={styles.scrollContainer}
         decelerationRate="fast"
-        snapToInterval={263 + 26} // Card width + margin
+        snapToInterval={246}
         snapToAlignment="start"
       >
-        {players.map((player) => (
-          <View key={player.id} style={styles.card}>
-            {player.image ? (
+        {players.map((p) => (
+          <View key={p.id} style={styles.card}>
+            {p.imageUri ? (
               <Image
-                source={player.image}
+                source={{ uri: p.imageUri }}
                 style={styles.playerImage}
                 resizeMode="cover"
               />
             ) : (
-              <View style={styles.placeholderCard} />
+              <View style={styles.placeholder} />
             )}
           </View>
         ))}
@@ -72,32 +53,18 @@ export function PlayersSlider() {
 
 const styles = StyleSheet.create({
   container: {
-    width: "100%",
-    height: Platform.select({ web: 488, default: 400 }),
-    marginTop: 32, // Negative margin to pull it up (optional)
-    display: "flex",
+    marginVertical: 24,
   },
   title: {
-    fontFamily: "GTAmericaTrial",
+    fontSize: 40,
     fontWeight: "900",
-    fontSize: 60,
-    lineHeight: 75,
     color: "#BB4B36",
     marginLeft: 24,
-    marginBottom: 16,
   },
-  titleMobile: {
-    fontSize: 40,
-    lineHeight: 50,
-  },
+  titleMobile: { fontSize: 28 },
   scrollContainer: {
-    marginTop: 32,
-    paddingLeft: 24,
-    paddingRight: 24,
-  },
-  scrollContainerMobile: {
-    paddingLeft: 24,
-    paddingRight: 24,
+    paddingHorizontal: 24,
+    paddingTop: 16,
   },
   card: {
     width: 220,
@@ -105,16 +72,14 @@ const styles = StyleSheet.create({
     marginRight: 16,
     borderRadius: 15,
     overflow: "hidden",
+    backgroundColor: "#eee",
   },
   playerImage: {
     width: "100%",
     height: "100%",
-    borderRadius: 15,
   },
-  placeholderCard: {
-    width: "100%",
-    height: "100%",
-    backgroundColor: "rgba(69, 69, 69, 0.5)",
-    borderRadius: 15,
+  placeholder: {
+    flex: 1,
+    backgroundColor: "rgba(69,69,69,0.3)",
   },
 });

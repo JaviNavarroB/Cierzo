@@ -128,7 +128,7 @@ export function FooterMenu({ style, isDark = false }: FooterMenuProps) {
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.userButton, { marginRight: -10 }]}
-          onPress={() => navigation.navigate("deporte")}
+          onPress={() => navigation.navigate("homescreen")}
         >
           <User size={30} color={iconColor} />
         </TouchableOpacity>

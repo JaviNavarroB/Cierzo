@@ -1,11 +1,15 @@
+// components/SportsSlider.tsx
+
 import * as React from "react";
 import {
-  Dimensions,
   View,
+  Dimensions,
   Platform,
   StyleSheet,
   Image,
   Text,
+  TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 import Animated, {
   useAnimatedStyle,
@@ -17,29 +21,55 @@ import Carousel, {
   ICarouselInstance,
   Pagination,
 } from "react-native-reanimated-carousel";
+import { useRouter } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
 import { COLORS } from "@/constants/theme";
-import { LinearGradient } from "expo-linear-gradient"; // <-- new import
+import { useEquipos, EquipoItem } from "@/hooks/useEquipos";
+
 interface SportsSliderProps {
   scrollRef?: React.Ref<any>;
 }
+
 const windowWidth = Dimensions.get("window").width;
 const isMobile = Platform.OS !== "web" || windowWidth < 768;
-// Card's "center width"
-const cardWidth = isMobile ? 250 : 250;
-// Card's height
-const cardHeight = isMobile ? 400 : 300;
-
-const data = [...new Array(6).keys()];
+const cardWidth = isMobile ? 250 : 300;
+const cardHeight = isMobile ? 400 : 350;
 
 export default function SportsSlider({ scrollRef }: SportsSliderProps) {
+  const { equipos, loading, error } = useEquipos();
+  const router = useRouter();
   const ref = React.useRef<ICarouselInstance>(null);
   const progress = useSharedValue(0);
 
-  // A Card component that changes width based on how far it is from center
+  // Show spinner or error
+  if (loading) {
+    return (
+      <View style={styles.loader}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+      </View>
+    );
+  }
+  if (error) {
+    return (
+      <View style={styles.loader}>
+        <Text style={{ color: "red" }}>{error.message}</Text>
+      </View>
+    );
+  }
+
+  // Map your equipos into the shape the carousel needs.
+  // For now we use a placeholder image for every team.
+  const data = equipos.map((e: EquipoItem) => ({
+    id: e.id,
+    sportName: e.nombre_deporte_abv,
+    teamName: e.nombre,
+    imageUri: require("../assets/images/Poster1.jpeg"),
+  }));
+
   const Card = ({ index }: { index: number }) => {
+    const item = data[index];
     const animatedStyle = useAnimatedStyle(() => {
       const diff = Math.abs(progress.value - index);
-      // Interpolate from full width (center) to half width (sides)
       const widthInterpolated = interpolate(
         diff,
         [0, 1],
@@ -48,34 +78,37 @@ export default function SportsSlider({ scrollRef }: SportsSliderProps) {
       );
       return { width: widthInterpolated };
     });
-    // Added animated style to control text visibility based on center card condition
-    const textAnimatedStyle = useAnimatedStyle(() => {
-      const diff = Math.abs(progress.value - index);
-      return { opacity: diff < 0.5 ? 0 : 0 }; //change the opacity so the name's appear
-    });
+
     return (
-      <Animated.View style={[styles.cardOuterContainer, animatedStyle]}>
-        <Image
-          source={require("../assets/images/Poster1.jpeg")}
-          style={styles.cardImage}
-          resizeMode="cover"
-        />
-        {/* Moved gradient directly under Image */}
-        <LinearGradient
-          colors={["transparent", "rgba(0,0,0,0.9)"]}
-          style={styles.gradient}
-          start={{ x: 0.5, y: 0 }}
-          end={{ x: 0.5, y: 1 }}
-        />
-        {/* Apply animated opacity on the text only */}
-        <Animated.Text style={[styles.cardText, textAnimatedStyle]}>
-          Deporte {index + 1}
-        </Animated.Text>
-      </Animated.View>
+      <TouchableOpacity
+        onPress={() =>
+          router.push({
+            pathname: "/sports/[id]",
+            params: { id: item.id.toString() },
+          })
+        }
+      >
+        <Animated.View style={[styles.cardContainer, animatedStyle]}>
+          <Image
+            source={item.imageUri}
+            style={styles.cardImage}
+            resizeMode="cover"
+          />
+          <LinearGradient
+            colors={["transparent", "rgba(0,0,0,0.9)"]}
+            style={styles.gradient}
+            start={{ x: 0.5, y: 0 }}
+            end={{ x: 0.5, y: 1 }}
+          />
+          <View style={styles.textOverlay}>
+            <Text style={styles.sportText}>{item.sportName}</Text>
+            <Text style={styles.teamText}>{item.teamName}</Text>
+          </View>
+        </Animated.View>
+      </TouchableOpacity>
     );
   };
 
-  // Jump to page on pagination press
   const onPressPagination = (index: number) => {
     ref.current?.scrollTo({
       count: index - progress.value,
@@ -87,40 +120,25 @@ export default function SportsSlider({ scrollRef }: SportsSliderProps) {
     <View style={styles.container}>
       <Carousel
         ref={ref}
-        // The carousel should span the full screen width,
-        // but each card is narrower (cardWidth).
         width={windowWidth}
         height={cardHeight}
-        pagingEnabled={true} // Let multiple cards be visible
         data={data}
         onProgressChange={progress}
-        vertical={false}
         mode="parallax"
         modeConfig={{
-          // Slight scale for side cards
           parallaxScrollingScale: 0.9,
-          // Smaller offset to keep side cards visible
           parallaxScrollingOffset: 260,
         }}
-        onConfigurePanGesture={(gestureChain) =>
-          // changed threshold from [-30, 30] to [-10, 10] for scroll behavior like GallerySlider
-          gestureChain.activeOffsetX([-10, 10])
-        }
+        onConfigurePanGesture={(g) => g.activeOffsetX([-10, 10])}
         renderItem={({ index }) => <Card index={index} />}
       />
 
       <Pagination.Basic
         progress={progress}
         data={data}
-        dotStyle={{
-          backgroundColor: COLORS.dots.inactive.dark,
-          borderRadius: 50,
-        }}
-        activeDotStyle={{
-          backgroundColor: COLORS.dots.active.dark,
-          borderRadius: 50,
-        }}
-        containerStyle={{ gap: 5, marginTop: 10 }}
+        dotStyle={styles.dot}
+        activeDotStyle={styles.activeDot}
+        containerStyle={styles.pagination}
         onPress={onPressPagination}
       />
     </View>
@@ -128,21 +146,21 @@ export default function SportsSlider({ scrollRef }: SportsSliderProps) {
 }
 
 const styles = StyleSheet.create({
+  loader: {
+    width: "100%",
+    height: 300,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   container: {
     width: "100%",
-    // Enough height for the carousel to show
     height: Platform.select({ web: 488, default: 390 }),
-    marginTop: 0,
-    marginBottom: 0,
     alignItems: "center",
     justifyContent: "center",
   },
-  cardOuterContainer: {
-    // Occupies the interpolated width
-    flex: 1,
+  cardContainer: {
     borderRadius: 15,
     overflow: "hidden",
-    // Margin so the next card is partially visible
     marginHorizontal: 10,
     alignSelf: "center",
   },
@@ -150,14 +168,6 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
   },
-  textOverlay: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: 10,
-  },
-  // New gradient style matching EventsSlider background behind name
   gradient: {
     position: "absolute",
     left: 0,
@@ -166,17 +176,33 @@ const styles = StyleSheet.create({
     height: "66%",
     zIndex: 2,
   },
-  // Updated styling for sport name to match EventsSlider
-  cardText: {
+  textOverlay: {
     position: "absolute",
-    flex: 1,
-    right: 25,
-    alignItems: "center",
     bottom: 25,
+    left: 20,
+    right: 20,
+    zIndex: 3,
+  },
+  sportText: {
     color: COLORS.text.light,
-    fontSize: 24,
-    fontWeight: "900",
-    zIndex: 999,
-    // Removed static opacity to allow animated opacity to work
+    fontSize: 22,
+    fontWeight: "800",
+  },
+  teamText: {
+    color: COLORS.text.light,
+    fontSize: 18,
+    marginTop: 4,
+  },
+  dot: {
+    backgroundColor: COLORS.dots.inactive.dark,
+    borderRadius: 50,
+  },
+  activeDot: {
+    backgroundColor: COLORS.dots.active.dark,
+    borderRadius: 50,
+  },
+  pagination: {
+    gap: 5,
+    marginTop: 10,
   },
 });

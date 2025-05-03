@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useRef, useEffect, useState } from "react";
 import {
   StyleSheet,
@@ -5,10 +7,8 @@ import {
   Platform,
   View,
   Text,
-  Dimensions,
   useWindowDimensions,
   TouchableOpacity,
-  StatusBar,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { HeaderMenu } from "@/components/HeaderMenu";
@@ -22,13 +22,14 @@ import BackgroundPattern from "@/assets/images/BackgroundPattern.svg";
 import { LinearGradient } from "expo-linear-gradient";
 import { ArrowRight, ChevronDown } from "lucide-react-native";
 import * as Haptics from "expo-haptics";
+import { StatusBar } from "react-native";
 
 // Override useLayoutEffect with useEffect on the server
 if (typeof window === "undefined") {
   React.useLayoutEffect = React.useEffect;
 }
 
-export default function Deporte() {
+export default function HomeScreen() {
   const { width, height } = useWindowDimensions();
   const isMobile = Platform.OS !== "web" || width < 768;
 
@@ -156,7 +157,7 @@ export default function Deporte() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <StatusBar barStyle="dark-content" />
+      <StatusBar backgroundColor={COLORS.text.dark} barStyle="light-content" />
       <SafeAreaView
         style={[
           styles.wholeScreen,
@@ -427,7 +428,8 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: 120, // Space for footer
+    paddingBottom: 120,
+    top: -60, // Space for footer
   },
   footerMenu: {
     position: "absolute",
