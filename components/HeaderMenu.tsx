@@ -130,8 +130,6 @@ export function HeaderMenu({ isDark = false }: HeaderMenuProps) {
           <TouchableOpacity
             onPress={() => navigate("index")}
             style={styles.logoButton}
-            onMouseEnter={() => handleHover("logo")}
-            onMouseLeave={() => handleHover(null)}
           >
             <Image
               source={require("../assets/images/LogoLetras.png")}
@@ -150,8 +148,6 @@ export function HeaderMenu({ isDark = false }: HeaderMenuProps) {
             <TouchableOpacity
               style={[styles.navItem]}
               onPress={() => navigate("index")}
-              onMouseEnter={() => handleHover("index")}
-              onMouseLeave={() => handleHover(null)}
             >
               <Text
                 style={[
@@ -178,8 +174,6 @@ export function HeaderMenu({ isDark = false }: HeaderMenuProps) {
             <TouchableOpacity
               style={[styles.navItem]}
               onPress={() => navigate("about")}
-              onMouseEnter={() => handleHover("about")}
-              onMouseLeave={() => handleHover(null)}
             >
               <Text
                 style={[
@@ -206,8 +200,6 @@ export function HeaderMenu({ isDark = false }: HeaderMenuProps) {
             <TouchableOpacity
               style={[styles.navItem]}
               onPress={() => navigate("profile")}
-              onMouseEnter={() => handleHover("profile")}
-              onMouseLeave={() => handleHover(null)}
             >
               <Text
                 style={[
@@ -230,6 +222,58 @@ export function HeaderMenu({ isDark = false }: HeaderMenuProps) {
                 />
               )}
             </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.navItem]}
+              onPress={() => navigate("deportes")}
+            >
+              <Text
+                style={[
+                  styles.navText,
+                  currentRoute === "deportes" && styles.activeNavText,
+                  hoveredItem === "deportes" && styles.hoveredNavText,
+                ]}
+              >
+                Deportes
+              </Text>
+              {currentRoute === "deportes" && (
+                <Animated.View
+                  style={[
+                    styles.activeIndicator,
+                    {
+                      opacity: indicatorAnim,
+                      transform: [{ scaleX: indicatorAnim }],
+                    },
+                  ]}
+                />
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.navItem]}
+              onPress={() => navigate("eventos")}
+            >
+              <Text
+                style={[
+                  styles.navText,
+                  currentRoute === "eventos" && styles.activeNavText,
+                  hoveredItem === "eventos" && styles.hoveredNavText,
+                ]}
+              >
+                Eventos
+              </Text>
+              {currentRoute === "eventos" && (
+                <Animated.View
+                  style={[
+                    styles.activeIndicator,
+                    {
+                      opacity: indicatorAnim,
+                      transform: [{ scaleX: indicatorAnim }],
+                    },
+                  ]}
+                />
+              )}
+            </TouchableOpacity>
           </View>
         )}
 
@@ -241,8 +285,6 @@ export function HeaderMenu({ isDark = false }: HeaderMenuProps) {
               style={styles.menuButton}
               onPress={toggleMenu}
               accessibilityLabel="Menú"
-              onMouseEnter={() => handleHover("menu")}
-              onMouseLeave={() => handleHover(null)}
             >
               <View
                 style={[
@@ -298,9 +340,7 @@ export function HeaderMenu({ isDark = false }: HeaderMenuProps) {
                 >
                   Inicio
                 </Text>
-                {currentRoute === "index" && (
-                  <View style={styles.mobileMenuItemDot} />
-                )}
+                {currentRoute === "index"}
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -318,9 +358,7 @@ export function HeaderMenu({ isDark = false }: HeaderMenuProps) {
                 >
                   Sobre nosotros
                 </Text>
-                {currentRoute === "about" && (
-                  <View style={styles.mobileMenuItemDot} />
-                )}
+                {currentRoute === "about"}
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -338,9 +376,43 @@ export function HeaderMenu({ isDark = false }: HeaderMenuProps) {
                 >
                   Perfil
                 </Text>
-                {currentRoute === "profile" && (
-                  <View style={styles.mobileMenuItemDot} />
-                )}
+                {currentRoute === "profile"}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.mobileMenuItem,
+                  currentRoute === "deportes" && styles.activeMobileMenuItem,
+                ]}
+                onPress={() => navigate("deportes")}
+              >
+                <Text
+                  style={[
+                    styles.mobileMenuText,
+                    currentRoute === "deportes" && styles.activeMobileMenuText,
+                  ]}
+                >
+                  Deportes
+                </Text>
+                {currentRoute === "deportes"}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.mobileMenuItem,
+                  currentRoute === "eventos" && styles.activeMobileMenuItem,
+                ]}
+                onPress={() => navigate("eventos")}
+              >
+                <Text
+                  style={[
+                    styles.mobileMenuText,
+                    currentRoute === "eventos" && styles.activeMobileMenuText,
+                  ]}
+                >
+                  Eventos
+                </Text>
+                {currentRoute === "eventos"}
               </TouchableOpacity>
             </Animated.View>
           </View>
@@ -378,7 +450,6 @@ const styles = StyleSheet.create({
     width: 120,
     height: 40,
     resizeMode: "contain",
-    transition: "transform 0.3s ease",
   },
   logoHovered: {
     transform: [{ scale: 1.05 }],
@@ -405,7 +476,6 @@ const styles = StyleSheet.create({
     color: `rgba(${COLORS.background},0.7)`,
     fontWeight: "400",
     letterSpacing: 0.3,
-    transition: "color 0.3s ease",
   },
   activeNavText: {
     color: COLORS.background,
@@ -438,7 +508,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderWidth: 1,
     borderColor: COLORS.background,
-    transition: "all 0.3s ease",
   },
   menuButtonCircleHovered: {
     backgroundColor: COLORS.background,
@@ -485,15 +554,5 @@ const styles = StyleSheet.create({
   activeMobileMenuText: {
     color: COLORS.background,
     fontWeight: "500",
-  },
-  mobileMenuItemDot: {
-    position: "absolute",
-    left: 12,
-    top: "50%",
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: "transparent",
-    marginTop: -2,
   },
 });

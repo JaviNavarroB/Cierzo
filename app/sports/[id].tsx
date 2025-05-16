@@ -1,215 +1,193 @@
-// app/sports/[id].tsx
+"use client";
 
-import React, { useRef, useState } from "react";
+import { useState, useEffect } from "react";
 import {
-  SafeAreaView,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  Animated,
-  StatusBar,
   StyleSheet,
+  ScrollView,
+  View,
+  Text,
+  ActivityIndicator,
 } from "react-native";
-import { useLocalSearchParams } from "expo-router";
-import { ActivityIndicator as RNActivityIndicator } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Header } from "@/components/Header";
-import { HeaderMenu } from "@/components/HeaderMenu";
 import { Footer } from "@/components/Footer";
+import SeccionHorarios from "@/components/SeccionHorarios";
 import { FooterMenu } from "@/components/FooterMenu";
-import SeccionHorarios, {
-  HorarioItem,
-  PabellonInfo,
-  CuotasInfo,
-} from "@/components/SeccionHorarios";
+import { HeaderMenu } from "@/components/HeaderMenu";
 import { PlayersSlider } from "@/components/PlayersSlider";
-import { useSport, SportData } from "@/hooks/useSport";
-import { usePlayers, Player } from "@/hooks/usePlayers";
-import { LinearGradient } from "expo-linear-gradient";
-import * as Haptics from "expo-haptics";
 import { COLORS } from "@/constants/theme";
+import { useSport } from "@/hooks/useSport";
+import { usePlayers } from "@/hooks/usePlayers";
 
-export default function SportScreen() {
-  // 1) get the id param
-  const params = useLocalSearchParams();
-  const sportId = params.id ? parseInt(params.id as string, 10) : 0;
+// Definimos el tipo de props que recibe el componente
+interface DeportePageProps {
+  route?: {
+    params?: {
+      id?: string | number;
+    };
+  };
+}
 
-  // 2) fetch data
-  const { sport, loading, error } = useSport(sportId);
-  const { players, loading: playersLoading } = usePlayers(sportId);
+export default function DeportePage({ route }: DeportePageProps) {
+  // Obtener el ID del deporte de las props de navegación o de la URL
+  const [sportId, setSportId] = useState<number>(0);
 
-  // 3) local UI state
+  useEffect(() => {
+    // Intentar obtener el ID de diferentes fuentes
+    const getId = () => {
+      // 1. Intentar obtener de route.params (React Navigation)
+      if (route?.params?.id) {
+        return Number(route.params.id);
+      }
+
+      // 2. Intentar obtener de la URL (para entornos web)
+      if (typeof window !== "undefined") {
+        const pathSegments = window.location.pathname.split("/");
+        const idFromPath = pathSegments[pathSegments.length - 1];
+        if (idFromPath && !isNaN(Number(idFromPath))) {
+          return Number(idFromPath);
+        }
+      }
+
+      // Valor por defecto si no se encuentra
+      return 1;
+    };
+
+    setSportId(getId());
+  }, [route]);
+
+  // Estado para la pestaña activa en SeccionHorarios
   const [activeTab, setActiveTab] = useState<"horario" | "cuotas" | "pabellon">(
     "horario"
   );
-  const scrollY = useRef(new Animated.Value(0)).current;
 
-  if (loading) {
-    return (
-      <SafeAreaView style={styles.centered}>
-        <RNActivityIndicator size="large" color={COLORS.primary} />
-      </SafeAreaView>
-    );
-  }
-  if (error || !sport) {
-    return (
-      <SafeAreaView style={styles.centered}>
-        <Text style={{ color: "red" }}>
-          {error ? error.message : "Deporte no encontrado."}
-        </Text>
-      </SafeAreaView>
-    );
-  }
+  // Obtener datos del deporte
+  const { sport, loading: loadingSport, error: sportError } = useSport(sportId);
 
-  // destructure for convenience
+  // Obtener jugadores
   const {
-    descripcion: bienvenida,
-    horario,
-    cuota_mensual,
-    cuota_anual_federacion,
-    pabellon_nombre,
-    pabellon_direccion,
-    pabellon_descripcion,
-    cta_titulo,
-    cta_texto,
-  } = sport as SportData;
+    players,
+    loading: loadingPlayers,
+    error: playersError,
+  } = usePlayers(sportId);
 
-  // animated header opacity
-  const headerOpacity = scrollY.interpolate({
-    inputRange: [0, 200],
-    outputRange: [0, 1],
-    extrapolate: "clamp",
-  });
-
-  const handleJoin = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    // TODO: navigation to registration
+  // Preparar datos para SeccionHorarios
+  const horario = sport?.horario || [];
+  const cuotas = {
+    cuota_mensual: sport?.cuota_mensual || 0,
+    cuota_anual_federacion: sport?.cuota_anual_federacion || 0,
+  };
+  const pabellon = {
+    nombre: sport?.pabellon_nombre || "",
+    direccion: sport?.pabellon_direccion || "",
+    descripcion: sport?.pabellon_descripcion || "",
+    imagenUri:
+      "https://www.walashop.com/storyblok/f/191463/768x450/9811023932/basquet-mobile.jpg", // Imagen por defecto
+  };
+  const texto = {
+    descripcion: sport?.descripcion || "",
+    cta_titulo: sport?.cta_titulo || "",
+    cta_texto: sport?.cta_texto || "",
   };
 
-  return (
-    <SafeAreaView style={styles.whole}>
-      <StatusBar barStyle="light-content" />
-      <Animated.View
-        style={[styles.animatedHeader, { opacity: headerOpacity }]}
-      >
+  const nombre_deporte_abv = sport?.nombre_deporte_abv || "Deporte";
+
+  // Mostrar pantalla de carga mientras se obtienen los datos
+  if (loadingSport) {
+    return (
+      <SafeAreaView style={styles.wholeScreen} edges={["top", "left", "right"]}>
         <HeaderMenu />
-      </Animated.View>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+          <Text style={styles.loadingText}>Cargando información...</Text>
+        </View>
+        <FooterMenu style={styles.footerMenu} />
+      </SafeAreaView>
+    );
+  }
 
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          { useNativeDriver: true }
-        )}
-        scrollEventThrottle={16}
-        bounces={false}
-      >
-        <Header />
+  // Mostrar mensaje de error si hay algún problema
+  if (sportError || !sport) {
+    return (
+      <SafeAreaView style={styles.wholeScreen} edges={["top", "left", "right"]}>
+        <HeaderMenu />
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>
+            No se pudo cargar la información del deporte
+          </Text>
+        </View>
+        <FooterMenu style={styles.footerMenu} />
+      </SafeAreaView>
+    );
+  }
 
-        {/* Bienvenida */}
-        <Text style={styles.bienvenida}>{bienvenida}</Text>
+  return (
+    <SafeAreaView style={styles.wholeScreen} edges={["top", "left", "right"]}>
+      {/* Header */}
+      <HeaderMenu />
+      <ScrollView contentContainerStyle={styles.scrollContent} bounces={false}>
+        {/* Header */}
+        <Header title={nombre_deporte_abv} />
 
-        {/* Horarios / Cuotas / Pabellón */}
+        {/* Main content */}
         <SeccionHorarios
-          horario={horario as HorarioItem[]}
+          horario={horario}
           activeTab={activeTab}
           onTabChange={setActiveTab}
-          cuotas={
-            {
-              mensual: cuota_mensual,
-              anual: cuota_anual_federacion,
-            } as CuotasInfo
-          }
-          pabellon={
-            {
-              nombre: pabellon_nombre,
-              direccion: pabellon_direccion,
-              descripcion: pabellon_descripcion,
-            } as PabellonInfo
-          }
+          cuotas={cuotas}
+          pabellon={pabellon}
+          texto={texto}
         />
 
-        {/* Jugadores */}
-        {playersLoading ? (
-          <RNActivityIndicator size="small" color={COLORS.primary} />
-        ) : (
-          <PlayersSlider players={players as Player[]} />
+        {/* Players section - solo se muestra si hay jugadores */}
+        {!loadingPlayers && players.length > 0 && (
+          <PlayersSlider players={players} />
         )}
 
-        {/* CTA */}
-        <LinearGradient
-          colors={[COLORS.primary, COLORS.background]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.ctaContainer}
-        >
-          <Text style={styles.ctaTitle}>{cta_titulo}</Text>
-          <Text style={styles.ctaText}>{cta_texto}</Text>
-          <TouchableOpacity style={styles.ctaButton} onPress={handleJoin}>
-            <Text style={styles.ctaButtonLabel}>Únete</Text>
-          </TouchableOpacity>
-        </LinearGradient>
-
-        <Footer />
+        {/* Footer */}
+        <Footer title={nombre_deporte_abv} />
       </ScrollView>
 
+      {/* Fixed Footer Menu */}
       <FooterMenu style={styles.footerMenu} />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  centered: { flex: 1, justifyContent: "center", alignItems: "center" },
-  whole: { flex: 1, backgroundColor: COLORS.background },
-  animatedHeader: {
-    position: "absolute",
-    width: "100%",
-    zIndex: 10,
+  wholeScreen: {
+    flex: 1,
+    backgroundColor: COLORS.background,
   },
-  scrollContent: { paddingBottom: 80 },
-  bienvenida: {
-    fontSize: 18,
-    color: COLORS.primary,
-    textAlign: "center",
-    margin: 16,
-  },
-  ctaContainer: {
-    margin: 16,
-    borderRadius: 20,
-    padding: 24,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  ctaTitle: {
-    color: COLORS.text.light,
-    fontSize: 24,
-    fontWeight: "800",
-    marginBottom: 8,
-  },
-  ctaText: {
-    color: COLORS.text.light,
-    fontSize: 16,
-    textAlign: "center",
-    marginBottom: 16,
-  },
-  ctaButton: {
-    backgroundColor: COLORS.text.light,
-    paddingVertical: 12,
-    paddingHorizontal: 32,
-    borderRadius: 30,
-  },
-  ctaButtonLabel: {
-    color: COLORS.primary,
-    fontSize: 16,
-    fontWeight: "600",
+  scrollContent: {
+    flexGrow: 1,
+    marginTop: 0,
   },
   footerMenu: {
     position: "absolute",
     left: 0,
     right: 0,
-    bottom: 0,
+    marginTop: -40,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 18,
+    color: COLORS.primary,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  errorText: {
+    fontSize: 18,
+    color: COLORS.primary,
+    textAlign: "center",
   },
 });

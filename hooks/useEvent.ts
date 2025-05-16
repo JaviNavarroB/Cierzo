@@ -1,5 +1,6 @@
 // frontend/src/hooks/useEvent.ts
 import { useState, useEffect } from "react";
+import SERVER_URL from "../constants/Server";
 
 export interface EventData {
   id: number;
@@ -30,7 +31,7 @@ export function useEvent(id: number) {
   useEffect(() => {
     async function fetchEvent() {
       try {
-        const response = await fetch(`/api/events/event/${id}`);
+        const response = await fetch(`${SERVER_URL}/events/event/${id}`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }

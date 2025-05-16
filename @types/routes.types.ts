@@ -6,5 +6,8 @@ export type RootStackParamList = {
     about: undefined;
     homescreen: undefined;
     authscreen: undefined;
+    eventos: undefined;
+    deportes: undefined;
+    "sports/2": undefined;
     // ... add any other routes you use
   };

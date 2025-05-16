@@ -645,7 +645,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   heroTitle: {
-    fontFamily: "GT-America-Trial",
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
     fontSize: 32,
     fontWeight: "bold",
     color: COLORS.text.light,
@@ -667,7 +667,7 @@ const styles = StyleSheet.create({
   },
   heroInfoText: {
     color: COLORS.text.light,
-    fontFamily: "GT-America-Trial",
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
     fontSize: 14,
     marginLeft: 5,
     textShadowColor: "rgba(0, 0, 0, 0.75)",
@@ -699,7 +699,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   registrationStatusText: {
-    fontFamily: "GT-America-Trial",
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
     fontSize: 18,
     fontWeight: "bold",
     color: COLORS.primary,
@@ -711,19 +711,19 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   availableSpotsText: {
-    fontFamily: "GT-America-Trial",
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
     fontSize: 24,
     fontWeight: "bold",
     color: COLORS.primary,
   },
   totalSpotsText: {
-    fontFamily: "GT-America-Trial",
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
     fontSize: 16,
     color: COLORS.text.dark,
     marginLeft: 2,
   },
   registrationDeadlineText: {
-    fontFamily: "GT-America-Trial",
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
     fontSize: 14,
     color: COLORS.text.dark,
     marginBottom: 12,
@@ -749,7 +749,7 @@ const styles = StyleSheet.create({
   },
   registerButtonText: {
     color: COLORS.background,
-    fontFamily: "GT-America-Trial",
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
     fontSize: 16,
     fontWeight: "bold",
   },
@@ -765,14 +765,14 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   sectionTitle: {
-    fontFamily: "GT-America-Trial",
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
     fontSize: 22,
     fontWeight: "bold",
     color: COLORS.primary,
     marginBottom: 12,
   },
   descriptionText: {
-    fontFamily: "GT-America-Trial",
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
     fontSize: 16,
     lineHeight: 24,
     color: COLORS.text.dark,
@@ -792,14 +792,14 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   locationName: {
-    fontFamily: "GT-America-Trial",
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
     fontSize: 18,
     fontWeight: "bold",
     color: COLORS.primary,
     marginBottom: 5,
   },
   locationAddress: {
-    fontFamily: "GT-America-Trial",
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
     fontSize: 14,
     color: COLORS.text.dark,
     marginBottom: 10,
@@ -814,7 +814,7 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
   },
   directionButtonText: {
-    fontFamily: "GT-America-Trial",
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
     fontSize: 14,
     color: COLORS.primary,
     marginRight: 5,
@@ -839,7 +839,7 @@ const styles = StyleSheet.create({
     paddingRight: 10,
   },
   scheduleTime: {
-    fontFamily: "GT-America-Trial",
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
     fontSize: 14,
     color: COLORS.primary,
     fontWeight: "bold",
@@ -871,7 +871,7 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
   },
   scheduleActivity: {
-    fontFamily: "GT-America-Trial",
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
     fontSize: 14,
     color: COLORS.text.dark,
   },
@@ -879,7 +879,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   testimonialText: {
-    fontFamily: "GT-America-Trial",
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
     fontSize: 14,
     fontStyle: "italic",
     color: COLORS.text.dark,
@@ -908,13 +908,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   testimonialName: {
-    fontFamily: "GT-America-Trial",
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
     fontSize: 14,
     fontWeight: "bold",
     color: COLORS.primary,
   },
   testimonialRole: {
-    fontFamily: "GT-America-Trial",
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
     fontSize: 12,
     color: COLORS.text.dark,
   },
@@ -927,7 +927,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   faqQuestion: {
-    fontFamily: "GT-America-Trial",
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
     fontSize: 16,
     fontWeight: "bold",
     color: COLORS.primary,
@@ -940,7 +940,7 @@ const styles = StyleSheet.create({
     transform: [{ rotate: "180deg" }],
   },
   faqAnswer: {
-    fontFamily: "GT-America-Trial",
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
     fontSize: 14,
     color: COLORS.text.dark,
     marginTop: 10,
@@ -949,7 +949,7 @@ const styles = StyleSheet.create({
     borderTopColor: "rgba(187, 75, 54, 0.1)",
   },
   socialText: {
-    fontFamily: "GT-America-Trial",
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
     fontSize: 14,
     color: COLORS.text.dark,
     marginBottom: 16,

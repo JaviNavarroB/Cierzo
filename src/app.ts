@@ -32,6 +32,17 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Rutas API (se montan con el prefijo /api)
 app.use('/api/events', eventRoutes);
 
+// Servir estáticamente las fotos de jugadores:
+//   – carpeta física: <proyecto>/assets/images/players/
+//   – URL pública:   /players/<nombre-fichero>
+app.use(
+    '/players',
+    express.static(
+      path.join(__dirname, '..', 'assets', 'images', 'players'),
+      { fallthrough: false }
+    )
+  );
+
 
 
 

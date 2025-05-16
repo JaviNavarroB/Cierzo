@@ -1,11 +1,12 @@
 // hooks/usePlayers.ts
 
 import { useState, useEffect } from "react";
+import SERVER_URL from "../constants/Server";
 
 export interface Player {
   id: number | string;
-  name: string;
-  imageUri?: string;
+  nombre: string;
+  foto?: string;
 }
 
 export function usePlayers(teamId: number) {
@@ -14,34 +15,30 @@ export function usePlayers(teamId: number) {
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    if (!teamId) {
-      setLoading(false);
-      return;
-    }
-    async function fetchPlayers() {
-      try {
-        const res = await fetch(`/api/sports/${teamId}/inscripciones`);
+    if (!teamId) return setLoading(false);
+    const url = `${SERVER_URL}/equipos/${teamId}/inscripciones`;
+    console.log("Fetch de inscripciones:", url);
+    fetch(url)
+      .then(res => {
+        console.log("Status:", res.status);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const { inscripciones }: { inscripciones: Array<{
-          id_usuario: number;
-          nombre: string;
-          avatar_url?: string;
-        }> } = await res.json();
-
+        return res.json();
+      })
+      .then(data => {
+        console.log("INSCRIPCIONES RAW:", data.inscripciones);
         setPlayers(
-          inscripciones.map(i => ({
+          data.inscripciones.map((i: any) => ({
             id: i.id_usuario,
-            name: i.nombre,
-            imageUri: i.avatar_url,
+            nombre: i.nombre,
+            foto: i.foto,
           }))
         );
-      } catch (err: any) {
+      })
+      .catch(err => {
+        console.error(err);
         setError(err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchPlayers();
+      })
+      .finally(() => setLoading(false));
   }, [teamId]);
 
   return { players, loading, error };

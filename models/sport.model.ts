@@ -32,8 +32,8 @@ class Deporte {
     return rows.map(r => ({
       id: r.id,
       nombre: r.nombre,
-      cuota_mensual: r.cuota_mensual,
-      cuota_anual_federacion: r.cuota_anual_federacion,
+      cuota_mensual: Number(r.cuota_mensual),
+      cuota_anual_federacion: Number(r.cuota_anual_federacion),
     }));
   }
 
@@ -52,7 +52,7 @@ class Deporte {
         nombre,
         cuota_mensual,
         cuota_anual_federacion
-      FROM Deporte
+      FROM deporte
       WHERE id = ?
     `;
     const [rows] = await pool.query<DeporteRow[]>(sql, [id]);

@@ -1,6 +1,7 @@
 // hooks/useEquipos.ts
 
 import { useState, useEffect } from "react";
+import SERVER_URL from "../constants/Server";
 
 export interface EquipoItem {
   id: number;
@@ -16,7 +17,7 @@ export function useEquipos() {
   useEffect(() => {
     async function fetchEquipos() {
       try {
-        const res = await fetch("/api/equipos");
+        const res = await fetch(`${SERVER_URL}/equipos`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const { equipos: data } = await res.json() as { equipos: EquipoItem[] };
         setEquipos(data);

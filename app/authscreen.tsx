@@ -52,7 +52,10 @@ const AuthScreen: React.FC = () => {
         });
         console.log("Login successful");
         await new Promise((resolve) => setTimeout(resolve, 100));
-        router.replace(`/index`);
+        // CORRECT:
+        router.replace({
+          pathname: "/homescreen",
+        });
       } else {
         if (password !== confirmPassword) {
           Alert.alert("Error", "Passwords do not match");
@@ -85,7 +88,7 @@ const AuthScreen: React.FC = () => {
       >
         {/* Fixed header with logo at the top */}
         <View style={styles.header}>
-          <Text style={styles.logo}>finder</Text>
+          <Text style={styles.logo}>Cierzo</Text>
         </View>
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
