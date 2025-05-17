@@ -15,13 +15,13 @@ interface UsuarioAttributes {
   telefono?: string;
   contrasenya: string;
   foto?: string;
-  descripcion?: string;
+
 }
 
 /* ---------- 2. Atributos opcionales para create() ---------- */
 type UsuarioCreation = Optional<
   UsuarioAttributes,
-  'id' | 'apellidos' | 'telefono' | 'foto' | 'descripcion'
+  'id' | 'apellidos' | 'telefono' | 'foto'
 >;
 
 /* ---------- 3. Clase Sequelize ---------- */
@@ -37,27 +37,20 @@ class Usuario extends Model<UsuarioAttributes, UsuarioCreation>
   public telefono?: string;
   public contrasenya!: string;
   public foto?: string;
-  public descripcion?: string;
 
   /* --------- Métodos estáticos RAW (pool) --------- */
 
   /** Crea usuario y devuelve el ID generado */
-  static async createUsuario(u: Partial<Usuario>): Promise<number> {
-    const [result] = await pool.query<ResultSetHeader>(
-      `INSERT INTO usuarios
-       (id_rol, nombre, apellidos, genero, correo, telefono, contrasenya, foto, descripcion)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        u.idRol ?? 1,                  // invitado por defecto
-        u.nombre,
-        u.apellidos ?? null,
-        u.genero,
-        u.correo,
-        u.telefono ?? null,
-        u.contrasenya,
-        u.foto ?? null,
-        u.descripcion ?? null
-      ]
+    static async createUsuario(u: Partial<Usuario>): Promise<number> {
+        const [result] = await pool.query<ResultSetHeader>(
+            `INSERT INTO usuarios
+       (id_rol, nombre, correo, contrasenya)
+       VALUES (1, ?, ?, ?)`,
+            [               // invitado por defecto
+                u.nombre,
+                u.correo,
+                u.contrasenya
+            ]
     );
     return result.insertId;
   }
@@ -71,17 +64,17 @@ class Usuario extends Model<UsuarioAttributes, UsuarioCreation>
     return rows.length ? (rows[0] as Usuario) : null;
   }
 
-  /** Actualiza foto y descripción */
+  /** Actualiza foto  */
   static async updateProfile(
     userId: number,
-    updates: { foto?: string; descripcion?: string }
+    updates: { foto?: string }
   ): Promise<Usuario> {
     await pool.query(
-      'UPDATE usuarios SET foto = ?, descripcion = ? WHERE id = ?',
-      [updates.foto ?? null, updates.descripcion ?? null, userId]
+      'UPDATE usuarios SET foto = ? WHERE id = ?',
+      [updates.foto ?? null, userId]
     );
     const [rows] = await pool.query<RowDataPacket[]>(
-      'SELECT id, nombre, correo, foto, descripcion FROM usuarios WHERE id = ?',
+      'SELECT id, nombre, correo, foto FROM usuarios WHERE id = ?',
       [userId]
     );
     if (!rows.length) throw new Error('User not found');
@@ -123,7 +116,6 @@ Usuario.init(
       field: 'contrasenya'
     },
     foto: { type: DataTypes.STRING, field: 'foto' },
-    descripcion: { type: DataTypes.TEXT, field: 'descripcion' }
   },
   {
     sequelize,

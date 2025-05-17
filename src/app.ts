@@ -43,7 +43,13 @@ app.use(
     )
   );
 
-
+  app.use(
+    '/sports',
+    express.static(
+      path.join(__dirname, '..', 'assets', 'images', 'sports'),
+      { fallthrough: false }
+    )
+  );
 
 
 app.use('/api', sportRoutes);

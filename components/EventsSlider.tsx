@@ -21,7 +21,7 @@ const windowWidth = Dimensions.get("window").width;
 const isMobile = Platform.OS !== "web" || windowWidth < 768;
 
 export function EventsSlider(): JSX.Element {
-  const cardWidth = isMobile ? 325 : 400;
+  const cardWidth = isMobile ? 325 : 325;
   const cardHeight = 475;
   const progress = useSharedValue<number>(0);
   const router = useRouter(); // Get the router instance

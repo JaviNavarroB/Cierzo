@@ -1,208 +1,133 @@
-// components/SportsSlider.tsx
+// components/TeamsSlider.tsx
+"use client";
 
-import * as React from "react";
+import React from "react";
 import {
   View,
+  Text,
+  ScrollView,
+  Image,
+  StyleSheet,
   Dimensions,
   Platform,
-  StyleSheet,
-  Image,
-  Text,
   TouchableOpacity,
-  ActivityIndicator,
 } from "react-native";
-import Animated, {
-  useAnimatedStyle,
-  interpolate,
-  Extrapolate,
-  useSharedValue,
-} from "react-native-reanimated";
-import Carousel, {
-  ICarouselInstance,
-  Pagination,
-} from "react-native-reanimated-carousel";
 import { useRouter } from "expo-router";
-import { LinearGradient } from "expo-linear-gradient";
-import { COLORS } from "@/constants/theme";
 import { useEquipos, EquipoItem } from "@/hooks/useEquipos";
+import SERVER_URL from "@/constants/Server";
+import { COLORS } from "@/constants/theme";
 
-interface SportsSliderProps {
-  scrollRef?: React.Ref<any>;
+interface Props {
+  scrollRef?: React.RefObject<any>;
 }
 
-const windowWidth = Dimensions.get("window").width;
-const isMobile = Platform.OS !== "web" || windowWidth < 768;
-const cardWidth = isMobile ? 250 : 300;
-const cardHeight = isMobile ? 400 : 350;
-
-export default function SportsSlider({ scrollRef }: SportsSliderProps) {
+export function SportSlider({ scrollRef }: Props) {
   const { equipos, loading, error } = useEquipos();
+  const windowWidth = Dimensions.get("window").width;
+  const isMobile = Platform.OS !== "web" || windowWidth < 768;
   const router = useRouter();
-  const ref = React.useRef<ICarouselInstance>(null);
-  const progress = useSharedValue(0);
 
-  // Show spinner or error
-  if (loading) {
-    return (
-      <View style={styles.loader}>
-        <ActivityIndicator size="large" color={COLORS.primary} />
-      </View>
-    );
-  }
-  if (error) {
-    return (
-      <View style={styles.loader}>
-        <Text style={{ color: "red" }}>{error.message}</Text>
-      </View>
-    );
-  }
-
-  // Map your equipos into the shape the carousel needs.
-  // For now we use a placeholder image for every team.
-  const data = equipos.map((e: EquipoItem) => ({
-    id: e.id,
-    sportName: e.nombre_deporte_abv,
-    teamName: e.nombre,
-    imageUri: require("../assets/images/Poster1.jpeg"),
-  }));
-
-  const Card = ({ index }: { index: number }) => {
-    const item = data[index];
-    const animatedStyle = useAnimatedStyle(() => {
-      const diff = Math.abs(progress.value - index);
-      const widthInterpolated = interpolate(
-        diff,
-        [0, 1],
-        [cardWidth, cardWidth / 3],
-        Extrapolate.CLAMP
-      );
-      return { width: widthInterpolated };
-    });
-
-    return (
-      <TouchableOpacity
-        onPress={() =>
-          router.push({
-            pathname: "/sports/[id]",
-            params: { id: item.id.toString() },
-          })
-        }
-      >
-        <Animated.View style={[styles.cardContainer, animatedStyle]}>
-          <Image
-            source={item.imageUri}
-            style={styles.cardImage}
-            resizeMode="cover"
-          />
-          <LinearGradient
-            colors={["transparent", "rgba(0,0,0,0.9)"]}
-            style={styles.gradient}
-            start={{ x: 0.5, y: 0 }}
-            end={{ x: 0.5, y: 1 }}
-          />
-          <View style={styles.textOverlay}>
-            <Text style={styles.sportText}>{item.sportName}</Text>
-            <Text style={styles.teamText}>{item.teamName}</Text>
-          </View>
-        </Animated.View>
-      </TouchableOpacity>
-    );
-  };
-
-  const onPressPagination = (index: number) => {
-    ref.current?.scrollTo({
-      count: index - progress.value,
-      animated: true,
-    });
-  };
+  if (loading) return <Text style={styles.loading}>Cargando equipos…</Text>;
+  if (error) return <Text style={styles.loading}>Error: {error.message}</Text>;
 
   return (
     <View style={styles.container}>
-      <Carousel
-        ref={ref}
-        width={windowWidth}
-        height={cardHeight}
-        data={data}
-        onProgressChange={progress}
-        mode="parallax"
-        modeConfig={{
-          parallaxScrollingScale: 0.9,
-          parallaxScrollingOffset: 260,
-        }}
-        onConfigurePanGesture={(g) => g.activeOffsetX([-10, 10])}
-        renderItem={({ index }) => <Card index={index} />}
-      />
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContainer}
+        decelerationRate="fast"
+        snapToInterval={246}
+        snapToAlignment="start"
+      >
+        {equipos.map((team: EquipoItem) => {
+          const uri = `/sports/${team.foto}`;
+          console.log(`Loading image: ${uri}`);
 
-      <Pagination.Basic
-        progress={progress}
-        data={data}
-        dotStyle={styles.dot}
-        activeDotStyle={styles.activeDot}
-        containerStyle={styles.pagination}
-        onPress={onPressPagination}
-      />
+          return (
+            <TouchableOpacity
+              key={team.id}
+              style={styles.card}
+              onPress={() => router.push(`/sports/${team.id}`)}
+              activeOpacity={0.8}
+            >
+              {team.foto ? (
+                <Image
+                  source={{ uri: team.foto }}
+                  style={styles.playerImage}
+                  resizeMode="cover"
+                  onError={(e) =>
+                    console.warn(
+                      `Error loading image for team ${team.id}:`,
+                      e.nativeEvent.error
+                    )
+                  }
+                />
+              ) : (
+                <View style={styles.placeholder} />
+              )}
+              <Text style={styles.playerName} numberOfLines={1}>
+                {team.nombre}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  loader: {
-    width: "100%",
-    height: 300,
-    justifyContent: "center",
-    alignItems: "center",
-  },
   container: {
-    width: "100%",
-    height: Platform.select({ web: 488, default: 390 }),
-    alignItems: "center",
-    justifyContent: "center",
+    marginVertical: 24,
   },
-  cardContainer: {
+  title: {
+    fontSize: 40,
+    fontWeight: "900",
+    color: "#BB4B36",
+    marginLeft: 24,
+  },
+  titleMobile: {
+    fontSize: 28,
+  },
+  scrollContainer: {
+    paddingHorizontal: 24,
+    paddingTop: 16,
+  },
+  card: {
+    width: 220,
+    height: 320,
+    marginRight: 16,
     borderRadius: 15,
     overflow: "hidden",
-    marginHorizontal: 10,
-    alignSelf: "center",
+    backgroundColor: "#eee",
+    alignItems: "center",
   },
-  cardImage: {
+  playerImage: {
     width: "100%",
-    height: "100%",
+    height: 320,
   },
-  gradient: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    height: "66%",
-    zIndex: 2,
+  placeholder: {
+    width: "100%",
+    height: 320,
+    backgroundColor: "rgba(69,69,69,0.3)",
   },
-  textOverlay: {
+  playerName: {
     position: "absolute",
     bottom: 25,
-    left: 20,
     right: 20,
-    zIndex: 3,
-  },
-  sportText: {
+    width: 125,
+    textAlign: "right",
     color: COLORS.text.light,
-    fontSize: 22,
-    fontWeight: "800",
+    fontSize: 25,
+    fontWeight: "900",
+    zIndex: 999,
+    textShadowRadius: 5,
+    opacity: 0.8,
   },
-  teamText: {
-    color: COLORS.text.light,
-    fontSize: 18,
-    marginTop: 4,
-  },
-  dot: {
-    backgroundColor: COLORS.dots.inactive.dark,
-    borderRadius: 50,
-  },
-  activeDot: {
-    backgroundColor: COLORS.dots.active.dark,
-    borderRadius: 50,
-  },
-  pagination: {
-    gap: 5,
-    marginTop: 10,
+  loading: {
+    fontSize: 16,
+    color: COLORS.text.dark,
+    marginLeft: 24,
   },
 });

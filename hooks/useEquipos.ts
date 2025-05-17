@@ -7,6 +7,8 @@ export interface EquipoItem {
   id: number;
   nombre: string;               // team name
   nombre_deporte_abv: string;   // sport name or abbreviation
+  // Nueva propiedad para la foto (URL remota)
+  foto?: string;
 }
 
 export function useEquipos() {

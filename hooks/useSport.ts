@@ -18,7 +18,8 @@ export interface SportData {
   cta_texto: string;
   creado_en: string;
   latitud?: string;                        // if your model includes it
-  longitud?: string;                       // if your model includes it
+    longitud?: string;
+    foto?: string;  // if your model includes it
 }
 
 

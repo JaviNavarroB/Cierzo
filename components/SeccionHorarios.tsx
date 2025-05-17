@@ -43,6 +43,7 @@ interface Props {
   cuotas: CuotasInfo;
   pabellon: PabellonInfo;
   texto: Texto;
+  foto: string | undefined;
 }
 
 export default function SeccionHorarios({
@@ -52,6 +53,7 @@ export default function SeccionHorarios({
   cuotas,
   pabellon,
   texto,
+  foto,
 }: Props) {
   const { width } = useWindowDimensions();
   const isMobile = Platform.OS !== "web" || width < 768;
@@ -183,7 +185,7 @@ export default function SeccionHorarios({
               >
                 <Image
                   source={{
-                    uri: "https://www.walashop.com/storyblok/f/191463/768x450/9811023932/basquet-mobile.jpg",
+                    uri: foto,
                   }}
                   style={styles.image}
                   resizeMode="cover"

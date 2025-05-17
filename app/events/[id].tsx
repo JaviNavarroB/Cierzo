@@ -6,7 +6,6 @@ import {
   Linking,
   Platform,
   Animated,
-  StatusBar,
   Dimensions,
   StyleSheet,
   View,
@@ -16,151 +15,43 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FooterMenu } from "@/components/FooterMenu";
+import { HeaderMenu } from "@/components/HeaderMenu";
 import { COLORS } from "@/constants/theme";
-import { MaterialIcons, FontAwesome, Feather } from "@expo/vector-icons";
-import MapView, { Marker } from "react-native-maps";
+import { MaterialIcons, FontAwesome } from "@expo/vector-icons";
 import {
-  Menu,
   Calendar,
   MapPin,
   Clock,
   Share2,
   ChevronDown,
 } from "lucide-react-native";
-import { useNavigation } from "@react-navigation/native";
 import GallerySlider from "@/components/GallerySlider";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from "expo-haptics";
-import { NavigationProp } from "@react-navigation/native";
-import { RootStackParamList } from "@/@types/routes.types";
 import { useLocalSearchParams } from "expo-router";
 import { useEvent, EventData } from "../../hooks/useEvent";
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
-
-interface AnimatedHeaderProps {
-  scrollY: Animated.Value;
-}
-
-function AnimatedHeader({ scrollY }: AnimatedHeaderProps) {
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const headerOpacity = scrollY.interpolate({
-    inputRange: [0, 200],
-    outputRange: [0, 1],
-    extrapolate: "clamp",
-  });
-  return (
-    <>
-      <StatusBar barStyle="light-content" />
-      <Animated.View
-        style={[headerStyles.container, { opacity: headerOpacity }]}
-      >
-        <View style={headerStyles.header}>
-          <Text style={headerStyles.logo}>Cierzo</Text>
-          <TouchableOpacity
-            style={headerStyles.menuButton}
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              navigation.navigate("profile");
-            }}
-          >
-            <Menu size={28} color={COLORS.text.dark} />
-          </TouchableOpacity>
-        </View>
-      </Animated.View>
-      <TouchableOpacity
-        style={headerStyles.backButton}
-        onPress={() => {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-          navigation.goBack();
-        }}
-      >
-        <View style={headerStyles.backButtonInner}>
-          <Feather name="chevron-left" size={24} color={COLORS.text.light} />
-        </View>
-      </TouchableOpacity>
-    </>
-  );
-}
-
-const headerStyles = StyleSheet.create({
-  container: {
-    position: "absolute",
-    width: "100%",
-    height: 100,
-    left: 0,
-    top: 0,
-    zIndex: 10,
-    backgroundColor: COLORS.text.light,
-  },
-  header: {
-    position: "absolute",
-    width: "100%",
-    height: "100%",
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
-  },
-  logo: {
-    fontFamily: "DancingScript-Bold",
-    fontSize: 40,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginTop: 25,
-    color: COLORS.text.dark,
-  },
-  menuButton: {
-    position: "absolute",
-    right: 20,
-    top: Platform.OS === "ios" ? 50 : 17,
-    width: 40,
-    height: 40,
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 20,
-  },
-  backButton: {
-    position: "absolute",
-    left: 20,
-    top: Platform.OS === "ios" ? 50 : 17,
-    zIndex: 20,
-  },
-  backButtonInner: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "rgba(0,0,0,0.3)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-});
+const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 export default function EventScreen() {
-  // Get the event id from the URL parameters
+  // Obtener ID desde URL
   const params = useLocalSearchParams();
   const eventId = params.id ? parseInt(params.id as string, 10) : 0;
 
-  // Use the useEvent hook to fetch event data
+  // Fetch
   const { event, loading, error } = useEvent(eventId);
 
-  // Local state & animation values for demonstration (e.g., registration logic)
+  // Estado local y animaciones
   const [availableSpots, setAvailableSpots] = useState<number>(
     event?.cupo_disponible || 15
   );
   const totalCapacity = event?.cupo_total || 30;
   const capacityPercentage = (availableSpots / totalCapacity) * 100;
-  const scrollY = useRef(new Animated.Value(0)).current;
-  const [expandedFaq, setExpandedFaq] = useState<null | number>(null);
-  const [isRegistering, setIsRegistering] = useState(false);
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.95)).current;
   const capacityWidthAnim = useRef(new Animated.Value(0)).current;
+  const [expandedFaq, setExpandedFaq] = useState<null | number>(null);
 
   useEffect(() => {
     Animated.parallel([
@@ -206,8 +97,7 @@ export default function EventScreen() {
     );
   }
 
-  // Map the fetched event data to our EventData interface.
-  // You may choose to format dates as needed.
+  // Mapear datos al tipo EventData
   const eventData: EventData = {
     id: event.id,
     titulo: event.titulo,
@@ -224,21 +114,21 @@ export default function EventScreen() {
       : "",
     cupo_total: event.cupo_total || 0,
     cupo_disponible: event.cupo_disponible || 0,
-    programa: event.programa, // Assuming this is already in the desired format (e.g. an array)
-    testimonios: event.testimonios, // Assuming this is already in the desired format
-    faqs: event.faqs, // Assuming this is already in the desired format
+    programa: event.programa,
+    testimonios: event.testimonios,
+    faqs: event.faqs,
     creado_en: event.creado_en
       ? new Date(event.creado_en).toLocaleDateString()
       : "",
   };
 
+  // Handlers
   const openMap = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     const scheme = Platform.select({
       ios: "maps:0,0?q=",
       android: "geo:0,0?q=",
     });
-    // Here we use the latitud and longitud from the event data
     const latLng = `${eventData.latitud},${eventData.longitud}`;
     const label = eventData.lugar_nombre;
     const url = Platform.select({
@@ -256,28 +146,24 @@ export default function EventScreen() {
 
   const handleRegister = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setIsRegistering(true);
-    setTimeout(() => {
-      setAvailableSpots((prev) => Math.max(0, prev - 1));
-      setIsRegistering(false);
-      Animated.sequence([
-        Animated.timing(scaleAnim, {
-          toValue: 1.05,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-        Animated.timing(scaleAnim, {
-          toValue: 1,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-      ]).start();
-      Animated.timing(capacityWidthAnim, {
-        toValue: 100 - ((availableSpots - 1) / totalCapacity) * 100,
-        duration: 500,
-        useNativeDriver: false,
-      }).start();
-    }, 1500);
+    setAvailableSpots((prev) => Math.max(0, prev - 1));
+    Animated.sequence([
+      Animated.timing(scaleAnim, {
+        toValue: 1.05,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scaleAnim, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start();
+    Animated.timing(capacityWidthAnim, {
+      toValue: 100 - ((availableSpots - 1) / totalCapacity) * 100,
+      duration: 500,
+      useNativeDriver: false,
+    }).start();
   };
 
   const toggleFaq = (index: number) => {
@@ -287,15 +173,12 @@ export default function EventScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["bottom"]}>
-      <AnimatedHeader scrollY={scrollY} />
+      {/* Aquí sustituimos el antiguo AnimatedHeader */}
+      <HeaderMenu />
+
       <Animated.ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          { useNativeDriver: true }
-        )}
-        scrollEventThrottle={16}
         style={{ opacity: fadeAnim, transform: [{ scale: scaleAnim }] }}
       >
         {/* Hero Section */}
@@ -331,8 +214,10 @@ export default function EventScreen() {
             </View>
           </View>
         </View>
+
         {/* Main Content Area */}
         <View style={styles.mainContentArea}>
+          {/* Registro */}
           <Animated.View style={[styles.card, styles.registrationCard]}>
             <View style={styles.registrationStatusContainer}>
               <Text style={styles.registrationStatusText}>
@@ -362,31 +247,20 @@ export default function EventScreen() {
               </View>
             </View>
             <TouchableOpacity
-              style={[
-                styles.registerButton,
-                isRegistering && styles.registerButtonDisabled,
-              ]}
+              style={styles.registerButton}
               onPress={handleRegister}
-              disabled={isRegistering}
             >
-              {isRegistering ? (
-                <View style={styles.loadingContainer}>
-                  <Text style={styles.registerButtonText}>Procesando</Text>
-                  <RNActivityIndicator
-                    size="small"
-                    color={COLORS.text.light}
-                    style={styles.loadingIndicator}
-                  />
-                </View>
-              ) : (
-                <Text style={styles.registerButtonText}>Inscribirse</Text>
-              )}
+              <Text style={styles.registerButtonText}>Inscribirse</Text>
             </TouchableOpacity>
           </Animated.View>
+
+          {/* Descripción */}
           <View style={styles.sectionContainer}>
             <Text style={styles.sectionTitle}>Descripción del Evento</Text>
             <Text style={styles.descriptionText}>{eventData.descripcion}</Text>
           </View>
+
+          {/* Ubicación */}
           <View style={styles.sectionContainer}>
             <Text style={styles.sectionTitle}>Ubicación</Text>
             <View style={styles.card}>
@@ -411,111 +285,95 @@ export default function EventScreen() {
                   </TouchableOpacity>
                 </View>
               </View>
-              <View style={styles.mapContainer}>
-                {/*
-                <MapView
-                  style={styles.map}
-                  initialRegion={{
-                    latitude: parseFloat(eventData.latitud),
-                    longitude: parseFloat(eventData.longitud),
-                    latitudeDelta: 0.01,
-                    longitudeDelta: 0.01,
-                  }}
-                >
-                  <Marker
-                    coordinate={{
-                      latitude: parseFloat(eventData.latitud),
-                      longitude: parseFloat(eventData.longitud),
-                    }}
-                    title={eventData.lugar_nombre}
-                  />
-                </MapView>
-                */}
-              </View>
+              {/* MapView deshabilitado */}
             </View>
           </View>
+
+          {/* Programa */}
           <View style={styles.sectionContainer}>
             <Text style={styles.sectionTitle}>Programa</Text>
             <View style={styles.card}>
-              {eventData.programa?.map((programa: any, index: number) => (
-                <View key={index} style={styles.scheduleItem}>
+              {eventData.programa?.map((item: any, idx: any) => (
+                <View key={idx} style={styles.scheduleItem}>
                   <View style={styles.scheduleTimeContainer}>
-                    <Text style={styles.scheduleTime}>{programa.time}</Text>
+                    <Text style={styles.scheduleTime}>{item.time}</Text>
                   </View>
                   <View style={styles.scheduleTimelineContainer}>
                     <View
                       style={[
                         styles.scheduleTimeline,
-                        index === eventData.programa.length - 1 &&
+                        idx === eventData.programa.length - 1 &&
                           styles.lastScheduleTimeline,
                       ]}
                     />
                     <View style={styles.scheduleTimelineDot} />
                   </View>
                   <View style={styles.scheduleActivityContainer}>
-                    <Text style={styles.scheduleActivity}>
-                      {programa.activity}
-                    </Text>
+                    <Text style={styles.scheduleActivity}>{item.activity}</Text>
                   </View>
                 </View>
               ))}
             </View>
           </View>
+
+          {/* Galería */}
           <View style={[styles.sectionContainer, { marginBottom: 16 }]}>
             <Text style={styles.sectionTitle}>Galería</Text>
             <GallerySlider />
           </View>
+
+          {/* Testimonios */}
           <View style={styles.sectionContainer}>
             <Text style={[styles.sectionTitle, { marginTop: 0 }]}>
               Testimonios
             </Text>
-            {eventData.testimonios?.map((testimonios: any, index: number) => (
-              <View key={index} style={[styles.card, styles.testimonialCard]}>
-                <Text style={styles.testimonialText}>"{testimonios.text}"</Text>
+            {eventData.testimonios?.map((t: any, idx: any) => (
+              <View key={idx} style={[styles.card, styles.testimonialCard]}>
+                <Text style={styles.testimonialText}>"{t.text}"</Text>
                 <View style={styles.testimonialAuthorContainer}>
                   <View style={styles.testimonialAvatar}>
                     <Text style={styles.testimonialAvatarText}>
-                      {testimonios.name.charAt(0)}
+                      {t.name.charAt(0)}
                     </Text>
                   </View>
                   <View style={styles.testimonialAuthorInfo}>
-                    <Text style={styles.testimonialName}>
-                      {testimonios.name}
-                    </Text>
-                    <Text style={styles.testimonialRole}>
-                      {testimonios.role}
-                    </Text>
+                    <Text style={styles.testimonialName}>{t.name}</Text>
+                    <Text style={styles.testimonialRole}>{t.role}</Text>
                   </View>
                 </View>
               </View>
             ))}
           </View>
+
+          {/* FAQs */}
           <View style={styles.sectionContainer}>
             <Text style={styles.sectionTitle}>Preguntas Frecuentes</Text>
-            {eventData.faqs?.map((faq: any, index: number) => (
+            {eventData.faqs?.map((f: any, idx: any) => (
               <TouchableOpacity
-                key={index}
+                key={idx}
                 style={[styles.card, styles.faqCard]}
-                onPress={() => toggleFaq(index)}
+                onPress={() => toggleFaq(idx)}
                 activeOpacity={0.8}
               >
                 <View style={styles.faqHeader}>
-                  <Text style={styles.faqQuestion}>{faq.question}</Text>
+                  <Text style={styles.faqQuestion}>{f.question}</Text>
                   <ChevronDown
                     size={20}
                     color={COLORS.primary}
                     style={[
                       styles.faqIcon,
-                      expandedFaq === index && styles.faqIconExpanded,
+                      expandedFaq === idx && styles.faqIconExpanded,
                     ]}
                   />
                 </View>
-                {expandedFaq === index && (
-                  <Text style={styles.faqAnswer}>{faq.answer}</Text>
+                {expandedFaq === idx && (
+                  <Text style={styles.faqAnswer}>{f.answer}</Text>
                 )}
               </TouchableOpacity>
             ))}
           </View>
+
+          {/* Compartir */}
           <View style={styles.sectionContainer}>
             <Text style={styles.sectionTitle}>Comparte este evento</Text>
             <View style={styles.card}>
@@ -562,6 +420,8 @@ export default function EventScreen() {
           </View>
         </View>
       </Animated.ScrollView>
+
+      {/* Footer fijo */}
       <FooterMenu style={styles.footerMenu} isDark={false} />
     </SafeAreaView>
   );
@@ -744,22 +604,11 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: "center",
   },
-  registerButtonDisabled: {
-    backgroundColor: "rgba(187, 75, 54, 0.7)",
-  },
   registerButtonText: {
     color: COLORS.background,
     fontFamily: "GT-America-Standard-Black-Trial.otf",
     fontSize: 16,
     fontWeight: "bold",
-  },
-  loadingContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  loadingIndicator: {
-    marginLeft: 8,
   },
   sectionContainer: {
     marginBottom: 24,
@@ -819,15 +668,6 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     marginRight: 5,
     fontWeight: "500",
-  },
-  mapContainer: {
-    height: 180,
-    borderRadius: 12,
-    overflow: "hidden",
-  },
-  map: {
-    width: "100%",
-    height: "100%",
   },
   scheduleItem: {
     flexDirection: "row",

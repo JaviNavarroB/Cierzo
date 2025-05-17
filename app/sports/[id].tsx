@@ -1,6 +1,5 @@
-"use client";
-
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
+import { useLocalSearchParams } from "expo-router";
 import {
   StyleSheet,
   ScrollView,
@@ -29,32 +28,29 @@ interface DeportePageProps {
 }
 
 export default function DeportePage({ route }: DeportePageProps) {
-  // Obtener el ID del deporte de las props de navegación o de la URL
-  const [sportId, setSportId] = useState<number>(0);
+  /* ------------------------------------------------------------------ */
+  /* 1 · OBTENER EL ID (React Navigation • expo-router • URL Web)        */
+  /* ------------------------------------------------------------------ */
+  const { id: searchId } = useLocalSearchParams();
 
-  useEffect(() => {
-    // Intentar obtener el ID de diferentes fuentes
-    const getId = () => {
-      // 1. Intentar obtener de route.params (React Navigation)
-      if (route?.params?.id) {
-        return Number(route.params.id);
-      }
+  const sportId = useMemo(() => {
+    // 1. Route params (React Navigation)
+    if (route?.params?.id) return Number(route.params.id);
 
-      // 2. Intentar obtener de la URL (para entornos web)
-      if (typeof window !== "undefined") {
-        const pathSegments = window.location.pathname.split("/");
-        const idFromPath = pathSegments[pathSegments.length - 1];
-        if (idFromPath && !isNaN(Number(idFromPath))) {
-          return Number(idFromPath);
-        }
-      }
+    // 2. URL param (expo-router)
+    if (searchId) return Number(searchId);
 
-      // Valor por defecto si no se encuentra
-      return 1;
-    };
+    // 3. URL del navegador (Web)
+    if (typeof window !== "undefined") {
+      const pathSegments = window.location.pathname.split("/").filter(Boolean);
+      const idFromPath = pathSegments[pathSegments.length - 1];
+      if (idFromPath && !isNaN(Number(idFromPath))) return Number(idFromPath);
+    }
 
-    setSportId(getId());
-  }, [route]);
+    // Fallback si todo falla
+    return 1;
+  }, [route?.params?.id, searchId]);
+  /* ------------------------------------------------------------------ */
 
   // Estado para la pestaña activa en SeccionHorarios
   const [activeTab, setActiveTab] = useState<"horario" | "cuotas" | "pabellon">(
@@ -90,6 +86,9 @@ export default function DeportePage({ route }: DeportePageProps) {
     cta_texto: sport?.cta_texto || "",
   };
 
+  const foto =
+    sport?.foto ||
+    "https://www.walashop.com/storyblok/f/191463/768x450/9811023932/basquet-mobile.jpg"; // Imagen por defecto
   const nombre_deporte_abv = sport?.nombre_deporte_abv || "Deporte";
 
   // Mostrar pantalla de carga mientras se obtienen los datos
@@ -123,13 +122,13 @@ export default function DeportePage({ route }: DeportePageProps) {
 
   return (
     <SafeAreaView style={styles.wholeScreen} edges={["top", "left", "right"]}>
-      {/* Header */}
+      {/* Header principal */}
       <HeaderMenu />
       <ScrollView contentContainerStyle={styles.scrollContent} bounces={false}>
-        {/* Header */}
+        {/* Header interno */}
         <Header title={nombre_deporte_abv} />
 
-        {/* Main content */}
+        {/* Contenido principal */}
         <SeccionHorarios
           horario={horario}
           activeTab={activeTab}
@@ -137,18 +136,19 @@ export default function DeportePage({ route }: DeportePageProps) {
           cuotas={cuotas}
           pabellon={pabellon}
           texto={texto}
+          foto={foto}
         />
 
-        {/* Players section - solo se muestra si hay jugadores */}
+        {/* Jugadores */}
         {!loadingPlayers && players.length > 0 && (
           <PlayersSlider players={players} />
         )}
 
-        {/* Footer */}
+        {/* Footer de página */}
         <Footer title={nombre_deporte_abv} />
       </ScrollView>
 
-      {/* Fixed Footer Menu */}
+      {/* Footer fijo */}
       <FooterMenu style={styles.footerMenu} />
     </SafeAreaView>
   );

@@ -19,13 +19,15 @@ class Deporte {
     nombre: string;
     cuota_mensual: number;
     cuota_anual_federacion: number;
+    foto: string;
   }>> {
     const sql = `
       SELECT
         id,
         nombre,
         cuota_mensual,
-        cuota_anual_federacion
+        cuota_anual_federacion,
+        foto
       FROM Deporte
     `;
     const [rows] = await pool.query<DeporteRow[]>(sql);
@@ -33,7 +35,8 @@ class Deporte {
       id: r.id,
       nombre: r.nombre,
       cuota_mensual: Number(r.cuota_mensual),
-      cuota_anual_federacion: Number(r.cuota_anual_federacion),
+        cuota_anual_federacion: Number(r.cuota_anual_federacion),
+        foto: r.foto,
     }));
   }
 
@@ -44,14 +47,16 @@ class Deporte {
     id: number;
     nombre: string;
     cuota_mensual: number;
-    cuota_anual_federacion: number;
+      cuota_anual_federacion: number;
+    foto: string;
   } | null> {
     const sql = `
       SELECT
         id,
         nombre,
         cuota_mensual,
-        cuota_anual_federacion
+        cuota_anual_federacion,
+        foto
       FROM deporte
       WHERE id = ?
     `;
@@ -62,7 +67,8 @@ class Deporte {
       id: r.id,
       nombre: r.nombre,
       cuota_mensual: r.cuota_mensual,
-      cuota_anual_federacion: r.cuota_anual_federacion,
+        cuota_anual_federacion: r.cuota_anual_federacion,
+      foto: r.foto,
     };
   }
 }

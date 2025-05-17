@@ -1,5 +1,6 @@
 // models/equipo.model.ts
 
+import { FooterComponent } from 'react-native-screens/lib/typescript/components/ScreenFooter';
 import pool from '../database/database';
 import { RowDataPacket } from 'mysql2';
 
@@ -18,13 +19,14 @@ interface EquipoRow extends RowDataPacket {
   cta_texto: string;
   creado_en: Date;
   cuota_mensual: number;
-  cuota_anual_federacion: number;
+    cuota_anual_federacion: number;
+    foto?: string | undefined;
 }
 
 interface InscRow extends RowDataPacket {
   id_usuario: number;
     nombre: string;
-    foto: string;
+foto?: string;
 }
 
 class Equipo {
@@ -34,34 +36,45 @@ class Equipo {
   static async getAllEquipos(): Promise<Array<{
     id: number;
     nombre: string;
-    nombre_deporte_abv: string;
+      nombre_deporte_abv: string;
+      foto?: string | undefined;
+    
   }>> {
     const sql = `
-      SELECT id, nombre, nombre_deporte_abv
-      FROM equipos
+       SELECT 
+        e.id,
+        e.nombre,
+        e.nombre_deporte_abv,
+        d.foto                  -- <–– sport’s image
+      FROM equipos e
+      JOIN deporte d 
+        ON e.id_deporte = d.id
     `;
     const [rows] = await pool.query<EquipoRow[]>(sql);
     return rows.map(r => ({
       id: r.id,
       nombre: r.nombre,
-      nombre_deporte_abv: r.nombre_deporte_abv,
+        nombre_deporte_abv: r.nombre_deporte_abv,
+        foto: r.foto ? `/sports/${r.foto}` : undefined,
     }));
   }
 
   /**
    * Devuelve un equipo por su ID, incluyendo datos JSON y cuotas.
    */
-    static async getEquipoById(id: number) {
+  static async getEquipoById(id: number) {
     const sql = `
       SELECT 
-        e.*, 
-        CAST(d.cuota_mensual           AS DECIMAL(10,2)) AS cuota_mensual,
-        CAST(d.cuota_anual_federacion  AS DECIMAL(10,2)) AS cuota_anual_federacion
+        e.*,
+        CAST(d.cuota_mensual          AS DECIMAL(10,2)) AS cuota_mensual,
+        CAST(d.cuota_anual_federacion AS DECIMAL(10,2)) AS cuota_anual_federacion,
+        d.foto
       FROM equipos e
-      JOIN deporte d ON e.id_deporte = d.id
+      JOIN deporte d 
+        ON e.id_deporte = d.id
       WHERE e.id = ?
     `;
-
+  
     const [rows] = await pool.query<EquipoRow[]>(sql, [id]);
     if (rows.length === 0) return null;
     const r = rows[0];
@@ -82,7 +95,7 @@ class Equipo {
     }
 
     // Normalize horario → Array<{ day; time }>
-    let horarioArr: Array<{ day: string; time?: string }> = [];
+    let horarioArr: Array<{ dia: string; hora?: string }> = [];
     const rawHorario = r.horario;
     if (rawHorario != null) {
       if (Array.isArray(rawHorario)) {
@@ -92,8 +105,8 @@ class Equipo {
           horarioArr = JSON.parse(rawHorario);
         } catch {
           horarioArr = rawHorario.split(',').map(chunk => {
-            const [day, time] = chunk.split(':');
-            return { day, time };
+            const [dia, hora] = chunk.split(':');
+            return { dia, hora };
           });
         }
       }
@@ -113,7 +126,8 @@ class Equipo {
       cta_texto: r.cta_texto,
       cuota_mensual: Number(r.cuota_mensual),
       cuota_anual_federacion: Number(r.cuota_anual_federacion),
-      creado_en: r.creado_en.toISOString(),
+        creado_en: r.creado_en.toISOString(),
+      foto: r.foto ? `/sports/${r.foto}` : undefined,
     };
   }
 

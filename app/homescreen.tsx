@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { HeaderMenu } from "@/components/HeaderMenu";
-import SportsSlider from "@/components/SportsSlider";
+import { SportSlider } from "@/components/SportsSlider";
 import { EventsSlider } from "@/components/EventsSlider";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import GallerySlider from "@/components/GallerySlider";
@@ -348,7 +348,7 @@ export default function HomeScreen() {
               </Text>
             </Animated.View>
 
-            <SportsSlider scrollRef={scrollRef} />
+            <SportSlider scrollRef={scrollRef} />
           </View>
 
           {/* Gallery Section */}
