@@ -16,19 +16,33 @@ import Carousel, { Pagination } from "react-native-reanimated-carousel";
 import { COLORS } from "@/constants/theme";
 import { useEvents } from "@/hooks/useEvents";
 import { useRouter } from "expo-router"; // Import useRouter for navigation
+import { useAuthExported } from "@/contexts/AuthContext"; // Import your auth context
 
 const windowWidth = Dimensions.get("window").width;
 const isMobile = Platform.OS !== "web" || windowWidth < 768;
-
+const { user } = useAuthExported(); // o tu contexto de auth
 export function EventsSlider(): JSX.Element {
-  const cardWidth = isMobile ? 325 : 325;
+  const cardWidth = 325;
   const cardHeight = 475;
   const progress = useSharedValue<number>(0);
   const router = useRouter(); // Get the router instance
 
   // Use the custom hook to fetch events from the backend
-  const { events, loading, error } = useEvents();
 
+  const { events, loading, error } = useEvents();
+  console.log("ROL ACTUAL DEL USUARIO:", user?.rol);
+  console.log("EVENTOS:", events);
+  const eventosAdmitidos =
+    user && user.rol
+      ? events.filter((e) =>
+          String(e.roles_admitidos || "")
+            .split(",")
+            .map((r) => r.trim().toLowerCase())
+            .includes(user.rol.toLowerCase())
+        )
+      : [];
+  console.log("ROL ACTUAL DEL USUARIO:", user?.rol);
+  console.log("EVENTOS:", events);
   // Handle loading or error states
   if (loading) {
     return (
@@ -53,13 +67,19 @@ export function EventsSlider(): JSX.Element {
   }
 
   // Map fetched events to the shape your carousel expects
-  const dataForCarousel = events.map((evt) => ({
+  const dataForCarousel = eventosAdmitidos.map((evt) => ({
     id: evt.id.toString(),
     // Replace this placeholder image with your event image URL when ready:
     image: require("../assets/images/Poster1.jpeg"),
     name: evt.titulo || "Evento sin título",
   }));
-
+  if (eventosAdmitidos.length === 0) {
+    return (
+      <Text style={{ textAlign: "center", marginTop: 40 }}>
+        No hay eventos disponibles para tu rol.
+      </Text>
+    );
+  }
   const onPressPagination = (index: number) => {
     progress.value = index;
   };
@@ -75,7 +95,7 @@ export function EventsSlider(): JSX.Element {
         mode="parallax"
         modeConfig={{
           parallaxScrollingScale: 1,
-          parallaxScrollingOffset: -15,
+          parallaxScrollingOffset: 0, //-15,
         }}
         onConfigurePanGesture={(gestureChain) =>
           gestureChain.activeOffsetX([-10, 10])
@@ -143,9 +163,9 @@ const styles = StyleSheet.create({
   },
   card: {
     position: "relative", // So absolute elements inside position relative to card
-    width: Platform.select({ web: 400, default: 325 }),
+    width: 325,
     height: 475, // Consistent height
-    marginRight: Platform.select({ web: 26, default: 16 }),
+    marginRight: 16,
     borderRadius: 15,
     overflow: "hidden",
   },

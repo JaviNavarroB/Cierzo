@@ -1,5 +1,5 @@
 // frontend/src/hooks/useEvent.ts
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import SERVER_URL from "../constants/Server";
 
 export interface EventData {
@@ -16,35 +16,41 @@ export interface EventData {
   fecha_limite_inscripcion?: string;
   cupo_total?: number;
   cupo_disponible?: number;
-  programa?: any;        // You can later replace "any" with a more specific type if needed
-  testimonios?: any;     // e.g., an array of objects with { name, role, text }
-  faqs?: any;            // e.g., an array of objects with { question, answer }
-  creado_en?: string;
+  programa?: any;
+  testimonios?: any;
+  faqs?: any;
+    creado_en?: string;
+    roles_admitidos?: string;
+    inscritos?: number; // number of registered users
 }
-
 
 export function useEvent(id: number) {
   const [event, setEvent] = useState<EventData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
 
-  useEffect(() => {
-    async function fetchEvent() {
-      try {
-        const response = await fetch(`${SERVER_URL}/events/event/${id}`);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        setEvent(data.event);
-      } catch (err) {
-        setError(err as Error);
-      } finally {
-        setLoading(false);
+  // fetch function wrapped in useCallback for stable reference
+  const fetchEvent = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`${SERVER_URL}/events/event/${id}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+      const data = await response.json();
+      setEvent(data.event);
+    } catch (err) {
+      setError(err as Error);
+    } finally {
+      setLoading(false);
     }
-    fetchEvent();
   }, [id]);
 
-  return { event, loading, error };
+  // load on mount and when id changes
+  useEffect(() => {
+    fetchEvent();
+  }, [fetchEvent]);
+
+  return { event, loading, error, refetch: fetchEvent };
 }

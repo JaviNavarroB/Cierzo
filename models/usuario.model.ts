@@ -1,11 +1,12 @@
 // models/usuario.model.ts
+
 import { Model, DataTypes, Optional } from 'sequelize';
 import sequelize from '../database/sequelise';
 import pool from '../database/database';
 import { RowDataPacket, ResultSetHeader } from 'mysql2';
 
 /* ---------- 1. Interface de atributos ---------- */
-interface UsuarioAttributes {
+export interface UsuarioAttributes {
   id: number;
   idRol: number;
   nombre: string;
@@ -14,8 +15,8 @@ interface UsuarioAttributes {
   correo: string;
   telefono?: string;
   contrasenya: string;
-  foto?: string;
-
+    foto?: string;
+    rol?: string;
 }
 
 /* ---------- 2. Atributos opcionales para create() ---------- */
@@ -24,7 +25,22 @@ type UsuarioCreation = Optional<
   'id' | 'apellidos' | 'telefono' | 'foto'
 >;
 
-/* ---------- 3. Clase Sequelize ---------- */
+/* ---------- 3. Tipo plano para devolver usuarios RAW ---------- */
+export type UsuarioPlano = UsuarioAttributes & { rol: string };
+
+/* ---------- 4. Mapeo de roles ---------- */
+export function mapIdRolToNombre(idRol: number): string {
+  switch (idRol) {
+    case 1: return "invitado";
+    case 2: return "socio";
+    case 3: return "jugador";
+    case 4: return "entrenador";
+    case 5: return "administrador";
+    default: return "invitado";
+  }
+}
+
+/* ---------- 5. Clase Sequelize ---------- */
 class Usuario extends Model<UsuarioAttributes, UsuarioCreation>
   implements UsuarioAttributes
 {
@@ -36,53 +52,68 @@ class Usuario extends Model<UsuarioAttributes, UsuarioCreation>
   public correo!: string;
   public telefono?: string;
   public contrasenya!: string;
-  public foto?: string;
+    public foto?: string;
+    public rol?: string;
 
   /* --------- Métodos estáticos RAW (pool) --------- */
 
   /** Crea usuario y devuelve el ID generado */
-    static async createUsuario(u: Partial<Usuario>): Promise<number> {
-        const [result] = await pool.query<ResultSetHeader>(
-            `INSERT INTO usuarios
-       (id_rol, nombre, correo, contrasenya)
-       VALUES (1, ?, ?, ?)`,
-            [               // invitado por defecto
-                u.nombre,
-                u.correo,
-                u.contrasenya
-            ]
+  static async createUsuario(u: Partial<Usuario>): Promise<number> {
+    const [result] = await pool.query<ResultSetHeader>(
+      `INSERT INTO usuarios (id_rol, nombre, correo, contrasenya)
+       VALUES (?, ?, ?, ?)`,
+      [
+        u.idRol ?? 1,   // Invitado por defecto
+        u.nombre,
+        u.correo,
+        u.contrasenya
+      ]
     );
     return result.insertId;
   }
 
-  /** Busca usuario por correo */
-  static async getUsuarioByCorreo(correo: string): Promise<Usuario | null> {
+  /** Busca usuario por correo y añade el nombre del rol */
+  static async getUsuarioByCorreo(correo: string): Promise<UsuarioPlano | null> {
     const [rows] = await pool.query<RowDataPacket[]>(
       'SELECT * FROM usuarios WHERE correo = ?',
       [correo]
     );
-    return rows.length ? (rows[0] as Usuario) : null;
+    if (!rows.length) return null;
+    const user = rows[0] as UsuarioAttributes;
+    return { ...user, rol: mapIdRolToNombre(user.idRol) };
+  }
+
+  /** Busca usuario por id y añade el nombre del rol */
+  static async getUsuarioById(id: number): Promise<UsuarioPlano | null> {
+    const [rows] = await pool.query<RowDataPacket[]>(
+      'SELECT * FROM usuarios WHERE id = ?',
+      [id]
+    );
+    if (!rows.length) return null;
+    const user = rows[0] as UsuarioAttributes;
+    return { ...user, rol: mapIdRolToNombre(user.idRol) };
   }
 
   /** Actualiza foto  */
   static async updateProfile(
     userId: number,
     updates: { foto?: string }
-  ): Promise<Usuario> {
+  ): Promise<UsuarioPlano> {
     await pool.query(
       'UPDATE usuarios SET foto = ? WHERE id = ?',
       [updates.foto ?? null, userId]
     );
     const [rows] = await pool.query<RowDataPacket[]>(
-      'SELECT id, nombre, correo, foto FROM usuarios WHERE id = ?',
+      'SELECT * FROM usuarios WHERE id = ?',
       [userId]
     );
     if (!rows.length) throw new Error('User not found');
-    return rows[0] as Usuario;
+    const user = rows[0] as UsuarioAttributes;
+    return { ...user, rol: mapIdRolToNombre(user.idRol) };
   }
 }
 
-/* ---------- 4. Init Sequelize Model ---------- */
+/* ---------- 6. Init Sequelize Model ---------- */
 Usuario.init(
   {
     id: {
@@ -116,13 +147,18 @@ Usuario.init(
       field: 'contrasenya'
     },
     foto: { type: DataTypes.STRING, field: 'foto' },
-  },
+    rol:
+    {
+      type: DataTypes.STRING, allowNull: false,
+      field: 'rol'
+        },
+    },
   {
     sequelize,
     modelName: 'Usuario',
     tableName: 'usuarios',
     timestamps: false
-  }
+    }
 );
 
 export default Usuario;

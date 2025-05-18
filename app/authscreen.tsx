@@ -241,6 +241,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     marginBottom: 20,
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
   },
   toggleButton: {
     paddingVertical: 10,
@@ -255,10 +256,12 @@ const styles = StyleSheet.create({
   toggleText: {
     fontSize: 16,
     color: COLORS.text.black,
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
   },
   activeToggleText: {
     color: COLORS.text.light,
     fontWeight: "bold",
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
   },
   inputContainer: {
     flexDirection: "row",
@@ -268,6 +271,7 @@ const styles = StyleSheet.create({
     borderColor: COLORS.text.black,
     borderRadius: 12,
     backgroundColor: "rgba(253, 245, 234, 0.93)",
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
   },
   inputIcon: {
     padding: 10,
@@ -278,6 +282,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     fontSize: 16,
     color: COLORS.text.black,
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
   },
   submitButton: {
     backgroundColor: "#B64B37",
@@ -285,16 +290,19 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
     marginTop: 20,
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
   },
   submitButtonText: {
     color: COLORS.text.light,
     fontSize: 16,
     fontWeight: "bold",
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
   },
   errorText: {
     color: "#B64B37",
     marginTop: 10,
     textAlign: "center",
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
   },
 });
 

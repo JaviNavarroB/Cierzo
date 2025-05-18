@@ -9,6 +9,7 @@ import sportRoutes from "../routes/sport.routes";
 import eventRoutes from '../routes/event.routes';
 import usuarioRoutes from '../routes/usuario.routes';
 import equipoRoutes from '../routes/equipo.routes';
+import inscripcionRoutes from '../routes/inscripcion.routes';
 
 import pool from '../database/database';
 import jwt from 'jsonwebtoken';
@@ -54,6 +55,7 @@ app.use(
 
 app.use('/api', sportRoutes);
 app.use('/api', equipoRoutes);
+app.use('/api', inscripcionRoutes);
 
 app.use("/api/user", usuarioRoutes);
 

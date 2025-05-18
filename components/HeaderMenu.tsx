@@ -128,7 +128,7 @@ export function HeaderMenu({ isDark = false }: HeaderMenuProps) {
         {/* Logo (centro) */}
         <View style={styles.logoContainer}>
           <TouchableOpacity
-            onPress={() => navigate("index")}
+            onPress={() => navigate("homescreen")}
             style={styles.logoButton}
           >
             <Image
@@ -147,18 +147,18 @@ export function HeaderMenu({ isDark = false }: HeaderMenuProps) {
           <View style={styles.desktopNav}>
             <TouchableOpacity
               style={[styles.navItem]}
-              onPress={() => navigate("index")}
+              onPress={() => navigate("homescreen")}
             >
               <Text
                 style={[
                   styles.navText,
-                  currentRoute === "index" && styles.activeNavText,
-                  hoveredItem === "index" && styles.hoveredNavText,
+                  currentRoute === "homescreen" && styles.activeNavText,
+                  hoveredItem === "homescreen" && styles.hoveredNavText,
                 ]}
               >
                 Inicio
               </Text>
-              {currentRoute === "index" && (
+              {currentRoute === "homescreen" && (
                 <Animated.View
                   style={[
                     styles.activeIndicator,
@@ -328,19 +328,20 @@ export function HeaderMenu({ isDark = false }: HeaderMenuProps) {
               <TouchableOpacity
                 style={[
                   styles.mobileMenuItem,
-                  currentRoute === "index" && styles.activeMobileMenuItem,
+                  currentRoute === "homescreen" && styles.activeMobileMenuItem,
                 ]}
-                onPress={() => navigate("index")}
+                onPress={() => navigate("homescreen")}
               >
                 <Text
                   style={[
                     styles.mobileMenuText,
-                    currentRoute === "index" && styles.activeMobileMenuText,
+                    currentRoute === "homescreen" &&
+                      styles.activeMobileMenuText,
                   ]}
                 >
                   Inicio
                 </Text>
-                {currentRoute === "index"}
+                {currentRoute === "homescreen"}
               </TouchableOpacity>
 
               <TouchableOpacity

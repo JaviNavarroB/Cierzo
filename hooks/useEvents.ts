@@ -11,7 +11,8 @@ export interface EventType {
   hora_fin?: string;
   lugar_nombre?: string;
   direccion?: string;
-  fecha_limite_inscripcion?: string;
+    fecha_limite_inscripcion?: string;
+    roles_admitidos?: string;
   // ... etc. add more fields as needed
 }
 

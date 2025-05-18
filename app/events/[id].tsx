@@ -1,5 +1,4 @@
 // frontend/src/app/events/[id].tsx
-
 import React, { useState, useRef, useEffect } from "react";
 import {
   ActivityIndicator as RNActivityIndicator,
@@ -12,7 +11,10 @@ import {
   Text,
   Image,
   TouchableOpacity,
+  Modal,
+  TextInput,
 } from "react-native";
+import { useInscripcion } from "@/hooks/useInscripcion";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FooterMenu } from "@/components/FooterMenu";
 import { HeaderMenu } from "@/components/HeaderMenu";
@@ -39,20 +41,56 @@ export default function EventScreen() {
   const eventId = params.id ? parseInt(params.id as string, 10) : 0;
 
   // Fetch
-  const { event, loading, error } = useEvent(eventId);
+  const { event, loading, error, refetch } = useEvent(eventId);
 
   // Estado local y animaciones
-  const [availableSpots, setAvailableSpots] = useState<number>(
-    event?.cupo_disponible || 15
-  );
-  const totalCapacity = event?.cupo_total || 30;
-  const capacityPercentage = (availableSpots / totalCapacity) * 100;
-
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.95)).current;
   const capacityWidthAnim = useRef(new Animated.Value(0)).current;
   const [expandedFaq, setExpandedFaq] = useState<null | number>(null);
+  const {
+    inscribirseEnEvento,
+    loading: inscLoading,
+    error: inscError,
+  } = useInscripcion();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [password, setPassword] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
 
+  // Calcula plazas dinámicamente desde los datos del evento
+  const inscritos = event?.inscritos || 0;
+  const totalCapacity = event?.cupo_total || 0;
+  const plazasLibres = totalCapacity - inscritos;
+  const capacityPercentage =
+    totalCapacity > 0 ? (inscritos / totalCapacity) * 100 : 0;
+
+  function getFriendlyErrorMessage(err: string) {
+    if (!err) return "";
+    if (err.includes("No puedes inscribirte a un evento pasado"))
+      return "El evento ya ha pasado.";
+    if (err.includes("El evento ya ha alcanzado el cupo máximo"))
+      return "¡El evento está lleno!";
+    if (err.includes("Ya estás inscrito"))
+      return "Ya estás inscrito en este evento.";
+    if (err.includes("Contraseña incorrecta")) return "Contraseña incorrecta.";
+    if (err.includes("Usuario no autenticado"))
+      return "Debes iniciar sesión para inscribirte.";
+    return err; // Por defecto, muestra el error original
+  }
+
+  // Calcula si el evento está cerrado por fecha límite o lleno
+  const fechaLimite = event?.fecha_limite_inscripcion
+    ? new Date(event?.fecha_limite_inscripcion)
+    : null;
+  const hoy = new Date();
+  const plazoFinalizado = fechaLimite ? hoy > fechaLimite : false;
+  const eventoLleno =
+    event?.cupo_total !== undefined &&
+    event?.inscritos !== undefined &&
+    event?.inscritos >= event?.cupo_total;
+  const inscripcionCerrada = plazoFinalizado || eventoLleno;
+
+  // Animaciones iniciales y al cambiar el porcentaje de capacidad
   useEffect(() => {
     Animated.parallel([
       Animated.timing(fadeAnim, {
@@ -65,13 +103,16 @@ export default function EventScreen() {
         duration: 800,
         useNativeDriver: true,
       }),
-      Animated.timing(capacityWidthAnim, {
-        toValue: 100 - capacityPercentage,
-        duration: 1200,
-        useNativeDriver: false,
-      }),
     ]).start();
   }, []);
+
+  useEffect(() => {
+    Animated.timing(capacityWidthAnim, {
+      toValue: 100 - capacityPercentage,
+      duration: 700,
+      useNativeDriver: false,
+    }).start();
+  }, [capacityPercentage]);
 
   if (loading) {
     return (
@@ -113,13 +154,13 @@ export default function EventScreen() {
       ? new Date(event.fecha_limite_inscripcion).toLocaleDateString()
       : "",
     cupo_total: event.cupo_total || 0,
-    cupo_disponible: event.cupo_disponible || 0,
     programa: event.programa,
     testimonios: event.testimonios,
     faqs: event.faqs,
     creado_en: event.creado_en
       ? new Date(event.creado_en).toLocaleDateString()
       : "",
+    inscritos: event.inscritos || 0,
   };
 
   // Handlers
@@ -144,28 +185,6 @@ export default function EventScreen() {
     Linking.openURL(`whatsapp://send?text=${encodeURIComponent(message)}`);
   };
 
-  const handleRegister = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setAvailableSpots((prev) => Math.max(0, prev - 1));
-    Animated.sequence([
-      Animated.timing(scaleAnim, {
-        toValue: 1.05,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-      Animated.timing(scaleAnim, {
-        toValue: 1,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-    ]).start();
-    Animated.timing(capacityWidthAnim, {
-      toValue: 100 - ((availableSpots - 1) / totalCapacity) * 100,
-      duration: 500,
-      useNativeDriver: false,
-    }).start();
-  };
-
   const toggleFaq = (index: number) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setExpandedFaq(expandedFaq === index ? null : index);
@@ -173,7 +192,6 @@ export default function EventScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["bottom"]}>
-      {/* Aquí sustituimos el antiguo AnimatedHeader */}
       <HeaderMenu />
 
       <Animated.ScrollView
@@ -224,7 +242,7 @@ export default function EventScreen() {
                 Inscripciones abiertas
               </Text>
               <View style={styles.spotInfoContainer}>
-                <Text style={styles.availableSpotsText}>{availableSpots}</Text>
+                <Text style={styles.availableSpotsText}>{plazasLibres}</Text>
                 <Text style={styles.totalSpotsText}>
                   /{totalCapacity} plazas disponibles
                 </Text>
@@ -233,24 +251,37 @@ export default function EventScreen() {
                 Fecha límite: {eventData.fecha_limite_inscripcion}
               </Text>
               <View style={styles.capacityBarContainer}>
-                <Animated.View
+                <View
                   style={[
                     styles.capacityBarFill,
                     {
-                      width: capacityWidthAnim.interpolate({
-                        inputRange: [0, 100],
-                        outputRange: ["0%", "100%"],
-                      }),
+                      width: `${capacityPercentage}%`, // ¡Barra proporcional!
                     },
                   ]}
                 />
               </View>
             </View>
             <TouchableOpacity
-              style={styles.registerButton}
-              onPress={handleRegister}
+              style={[
+                styles.registerButton,
+                inscripcionCerrada && { backgroundColor: "rgb(119, 119, 119)" }, // gris si cerrado
+              ]}
+              onPress={() => setModalVisible(true)}
+              disabled={inscripcionCerrada || inscLoading}
             >
-              <Text style={styles.registerButtonText}>Inscribirse</Text>
+              {inscripcionCerrada ? (
+                <Text style={[styles.registerButtonText, { color: "#888" }]}>
+                  {eventoLleno
+                    ? "Evento lleno"
+                    : plazoFinalizado
+                    ? "Inscripción cerrada"
+                    : "No disponible"}
+                </Text>
+              ) : inscLoading ? (
+                <RNActivityIndicator size="small" color={COLORS.background} />
+              ) : (
+                <Text style={styles.registerButtonText}>Inscribirse</Text>
+              )}
             </TouchableOpacity>
           </Animated.View>
 
@@ -421,56 +452,77 @@ export default function EventScreen() {
         </View>
       </Animated.ScrollView>
 
+      <Modal
+        visible={modalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={modalStyles.overlay}>
+          <View style={modalStyles.container}>
+            <Text style={modalStyles.title}>Confirma tu contraseña</Text>
+            <TextInput
+              placeholder="Contraseña"
+              secureTextEntry
+              value={password}
+              onChangeText={setPassword}
+              style={modalStyles.input}
+            />
+            {successMsg !== "" && (
+              <Text
+                style={{
+                  color: "green",
+                  textAlign: "center",
+                  marginVertical: 8,
+                }}
+              >
+                {successMsg}
+              </Text>
+            )}
+            {inscError && (
+              <Text style={modalStyles.error}>
+                {getFriendlyErrorMessage(inscError)}
+              </Text>
+            )}
+            <View style={modalStyles.buttonsRow}>
+              <TouchableOpacity
+                onPress={() => {
+                  setModalVisible(false);
+                  setPassword("");
+                  setSuccessMsg("");
+                }}
+              >
+                <Text style={modalStyles.buttonText}>Cancelar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={async () => {
+                  try {
+                    await inscribirseEnEvento(eventId, password);
+                    setSuccessMsg("¡Inscripción exitosa!");
+                    await refetch(); // <-- ACTUALIZA LOS DATOS DEL EVENTO
+                  } catch (e) {
+                    // Ya se muestra inscError
+                  } finally {
+                    setTimeout(() => {
+                      setModalVisible(false);
+                      setPassword("");
+                      setSuccessMsg("");
+                    }, 1500);
+                  }
+                }}
+                disabled={inscLoading || successMsg !== ""}
+              >
+                <Text style={modalStyles.buttonText}>Confirmar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
       {/* Footer fijo */}
       <FooterMenu style={styles.footerMenu} isDark={false} />
     </SafeAreaView>
   );
 }
-
-interface ActivityIndicatorProps {
-  size: "small" | "large";
-  color: string;
-  style?: any;
-}
-
-const ActivityIndicator: React.FC<ActivityIndicatorProps> = ({
-  size,
-  color,
-  style,
-}) => {
-  const spinValue = useRef(new Animated.Value(0)).current;
-  useEffect(() => {
-    const animation = Animated.loop(
-      Animated.timing(spinValue, {
-        toValue: 1,
-        duration: 1000,
-        useNativeDriver: true,
-      })
-    );
-    animation.start();
-    return () => animation.stop();
-  }, []);
-  const spin = spinValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: ["0deg", "360deg"],
-  });
-  return (
-    <Animated.View
-      style={[
-        {
-          width: size === "small" ? 16 : 24,
-          height: size === "small" ? 16 : 24,
-          borderRadius: size === "small" ? 8 : 12,
-          borderWidth: 2,
-          borderColor: color,
-          borderTopColor: "transparent",
-          transform: [{ rotate: spin }],
-        },
-        style,
-      ]}
-    />
-  );
-};
 
 const styles = StyleSheet.create({
   safeArea: {
@@ -816,5 +868,46 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     marginTop: -40,
+  },
+});
+const modalStyles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  container: {
+    width: "80%",
+    backgroundColor: COLORS.text.light,
+    borderRadius: 12,
+    padding: 16,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 12,
+    color: COLORS.text.dark,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    borderRadius: 8,
+    padding: 8,
+    marginBottom: 8,
+  },
+  error: {
+    color: "red",
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  buttonsRow: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+  },
+  buttonText: {
+    color: COLORS.primary,
+    fontWeight: "600",
+    marginLeft: 16,
   },
 });
