@@ -1,15 +1,20 @@
-import { useState } from "react";
-import { StyleSheet, View, Text } from "react-native";
+// components/Footer.tsx
 
+import React, { useState } from "react";
+import { StyleSheet, View, Text } from "react-native";
 import { COLORS } from "@/constants/theme";
 
-export function Footer() {
+interface FooterProps {
+  title: string;
+}
+
+export function Footer({ title }: FooterProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <View style={styles.container}>
       <View style={styles.titleContainer}>
-        <Text style={styles.title}>BASKET</Text>
+        <Text style={styles.title}>{title.toUpperCase()}</Text>
       </View>
     </View>
   );
@@ -20,26 +25,23 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#454545", // You might want to add this color to theme.ts
+    backgroundColor: "#454545",
     borderBottomWidth: 1,
     borderBottomColor: "#454545",
-    height: 200, // Altura ajustada para móvil
+    height: 200,
     width: "100%",
     marginTop: 64,
   },
-  // Aplica la rotación en el contenedor y no en el Text
   titleContainer: {
     transform: [{ rotate: "180deg" }],
-    // Si es necesario, se pueden ajustar márgenes/paddings aquí
   },
   title: {
     fontFamily: "GT-America-Compressed-Black-Trial.otf",
-    fontSize: 90, // Tamaño de fuente ajustado para móvil
+    fontSize: 90,
     fontWeight: "900",
     textAlign: "center",
-    letterSpacing: -2, // Ajuste de interletrado
+    letterSpacing: -2,
     color: COLORS.background,
     marginTop: 90,
-    // Se eliminó marginBottom para evitar efectos indeseados tras la rotación
   },
 });

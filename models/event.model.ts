@@ -1,4 +1,4 @@
-//models/usuario.model.ts
+//models/event.model.ts
 import { Model, DataTypes } from 'sequelize';
 import pool from '../database/database';
 import { RowDataPacket } from 'mysql2';
@@ -22,21 +22,39 @@ class Event extends Model {
     public testimonios?: any;
     public faqs?: any;
     public creado_en?: Date;
+    public roles_admitidos?: string;
+    public inscritos?: number; // number of registered users
 
     
 
     // Static methods for database operations
 
 
-    static async getEventById(id: number): Promise<Event | null> {
-        const [rows]: any[] = await pool.query("SELECT * FROM Eventos WHERE id = ?", [id]);
-        return rows.length > 0 ? rows[0] : null;
+    static async getEventById(id: number): Promise<any> {
+        // 1. Traer el evento
+        const [eventRows]: any[] = await pool.query("SELECT * FROM Eventos WHERE id = ?", [id]);
+        if (!eventRows.length) return null;
+        const event = eventRows[0];
+    
+        // 2. Traer el número de inscripciones para este evento
+        const [inscRows]: any[] = await pool.query(
+            "SELECT COUNT(*) AS inscritos FROM inscripcion_evento WHERE id_evento = ? and estado_inscripcion = 'Inscrito'",
+            [id]
+        );
+        const inscritos = inscRows[0].inscritos;
+    
+
+    
+        return {
+            ...event,
+            inscritos,         // número de inscritos  // plazas libres
+        };
     }
 
     static async getAvailableEvents(): Promise<any[]> {
         try {
             const [eventos] = await pool.execute<RowDataPacket[]>(`
-        SELECT * FROM Eventos `);
+        SELECT * FROM Eventos where fecha >= CURDATE()`);
     
             return eventos.map(evento => ({
                 id: evento.id, // ensure this property is set correctly
@@ -48,6 +66,7 @@ class Event extends Model {
                 lugar_nombre: evento.lugar_nombre,
                 direccion: evento.direccion,
                 fecha_limite_inscripcion: evento.fecha_limite_inscripcion,
+                roles_admitidos: evento.roles_admitidos,
        
             })) || [];
         } catch (error) {

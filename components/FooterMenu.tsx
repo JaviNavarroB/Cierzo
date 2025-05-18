@@ -57,7 +57,11 @@ export function FooterMenu({ style, isDark = false }: FooterMenuProps) {
           ]}
         >
           <Defs>
-            <ClipPath id="cut-out-circle" clipPathUnits="userSpaceOnUse">
+            <ClipPath
+              id="cut-out-circle"
+              // @ts-ignore: clipPathUnits is known at runtime
+              clipPathUnits="userSpaceOnUse"
+            >
               <Path
                 d={`
             M 0,15
@@ -128,7 +132,7 @@ export function FooterMenu({ style, isDark = false }: FooterMenuProps) {
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.userButton, { marginRight: -10 }]}
-          onPress={() => navigation.navigate("deporte")}
+          onPress={() => navigation.navigate("sports/2")}
         >
           <User size={30} color={iconColor} />
         </TouchableOpacity>

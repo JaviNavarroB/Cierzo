@@ -1,167 +1,96 @@
 // frontend/src/app/events/[id].tsx
-
 import React, { useState, useRef, useEffect } from "react";
 import {
   ActivityIndicator as RNActivityIndicator,
   Linking,
   Platform,
   Animated,
-  StatusBar,
   Dimensions,
   StyleSheet,
   View,
   Text,
   Image,
   TouchableOpacity,
+  Modal,
+  TextInput,
 } from "react-native";
+import { useInscripcion } from "@/hooks/useInscripcion";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FooterMenu } from "@/components/FooterMenu";
+import { HeaderMenu } from "@/components/HeaderMenu";
 import { COLORS } from "@/constants/theme";
-import { MaterialIcons, FontAwesome, Feather } from "@expo/vector-icons";
-import MapView, { Marker } from "react-native-maps";
+import { MaterialIcons, FontAwesome } from "@expo/vector-icons";
 import {
-  Menu,
   Calendar,
   MapPin,
   Clock,
   Share2,
   ChevronDown,
 } from "lucide-react-native";
-import { useNavigation } from "@react-navigation/native";
 import GallerySlider from "@/components/GallerySlider";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from "expo-haptics";
-import { NavigationProp } from "@react-navigation/native";
-import { RootStackParamList } from "@/@types/routes.types";
 import { useLocalSearchParams } from "expo-router";
 import { useEvent, EventData } from "../../hooks/useEvent";
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
-
-interface AnimatedHeaderProps {
-  scrollY: Animated.Value;
-}
-
-function AnimatedHeader({ scrollY }: AnimatedHeaderProps) {
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const headerOpacity = scrollY.interpolate({
-    inputRange: [0, 200],
-    outputRange: [0, 1],
-    extrapolate: "clamp",
-  });
-  return (
-    <>
-      <StatusBar barStyle="light-content" />
-      <Animated.View
-        style={[headerStyles.container, { opacity: headerOpacity }]}
-      >
-        <View style={headerStyles.header}>
-          <Text style={headerStyles.logo}>Cierzo</Text>
-          <TouchableOpacity
-            style={headerStyles.menuButton}
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              navigation.navigate("profile");
-            }}
-          >
-            <Menu size={28} color={COLORS.text.dark} />
-          </TouchableOpacity>
-        </View>
-      </Animated.View>
-      <TouchableOpacity
-        style={headerStyles.backButton}
-        onPress={() => {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-          navigation.goBack();
-        }}
-      >
-        <View style={headerStyles.backButtonInner}>
-          <Feather name="chevron-left" size={24} color={COLORS.text.light} />
-        </View>
-      </TouchableOpacity>
-    </>
-  );
-}
-
-const headerStyles = StyleSheet.create({
-  container: {
-    position: "absolute",
-    width: "100%",
-    height: 100,
-    left: 0,
-    top: 0,
-    zIndex: 10,
-    backgroundColor: COLORS.text.light,
-  },
-  header: {
-    position: "absolute",
-    width: "100%",
-    height: "100%",
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
-  },
-  logo: {
-    fontFamily: "DancingScript-Bold",
-    fontSize: 40,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginTop: 25,
-    color: COLORS.text.dark,
-  },
-  menuButton: {
-    position: "absolute",
-    right: 20,
-    top: Platform.OS === "ios" ? 50 : 17,
-    width: 40,
-    height: 40,
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 20,
-  },
-  backButton: {
-    position: "absolute",
-    left: 20,
-    top: Platform.OS === "ios" ? 50 : 17,
-    zIndex: 20,
-  },
-  backButtonInner: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "rgba(0,0,0,0.3)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-});
+const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 export default function EventScreen() {
-  // Get the event id from the URL parameters
+  // Obtener ID desde URL
   const params = useLocalSearchParams();
   const eventId = params.id ? parseInt(params.id as string, 10) : 0;
 
-  // Use the useEvent hook to fetch event data
-  const { event, loading, error } = useEvent(eventId);
+  // Fetch
+  const { event, loading, error, refetch } = useEvent(eventId);
 
-  // Local state & animation values for demonstration (e.g., registration logic)
-  const [availableSpots, setAvailableSpots] = useState<number>(
-    event?.cupo_disponible || 15
-  );
-  const totalCapacity = event?.cupo_total || 30;
-  const capacityPercentage = (availableSpots / totalCapacity) * 100;
-  const scrollY = useRef(new Animated.Value(0)).current;
-  const [expandedFaq, setExpandedFaq] = useState<null | number>(null);
-  const [isRegistering, setIsRegistering] = useState(false);
-
+  // Estado local y animaciones
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.95)).current;
   const capacityWidthAnim = useRef(new Animated.Value(0)).current;
+  const [expandedFaq, setExpandedFaq] = useState<null | number>(null);
+  const {
+    inscribirseEnEvento,
+    loading: inscLoading,
+    error: inscError,
+  } = useInscripcion();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [password, setPassword] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
 
+  // Calcula plazas dinámicamente desde los datos del evento
+  const inscritos = event?.inscritos || 0;
+  const totalCapacity = event?.cupo_total || 0;
+  const plazasLibres = totalCapacity - inscritos;
+  const capacityPercentage =
+    totalCapacity > 0 ? (inscritos / totalCapacity) * 100 : 0;
+
+  function getFriendlyErrorMessage(err: string) {
+    if (!err) return "";
+    if (err.includes("No puedes inscribirte a un evento pasado"))
+      return "El evento ya ha pasado.";
+    if (err.includes("El evento ya ha alcanzado el cupo máximo"))
+      return "¡El evento está lleno!";
+    if (err.includes("Ya estás inscrito"))
+      return "Ya estás inscrito en este evento.";
+    if (err.includes("Contraseña incorrecta")) return "Contraseña incorrecta.";
+    if (err.includes("Usuario no autenticado"))
+      return "Debes iniciar sesión para inscribirte.";
+    return err; // Por defecto, muestra el error original
+  }
+
+  // Calcula si el evento está cerrado por fecha límite o lleno
+  const fechaLimite = event?.fecha_limite_inscripcion
+    ? new Date(event?.fecha_limite_inscripcion)
+    : null;
+  const hoy = new Date();
+  const plazoFinalizado = fechaLimite ? hoy > fechaLimite : false;
+  const eventoLleno =
+    event?.cupo_total !== undefined &&
+    event?.inscritos !== undefined &&
+    event?.inscritos >= event?.cupo_total;
+  const inscripcionCerrada = plazoFinalizado || eventoLleno;
+
+  // Animaciones iniciales y al cambiar el porcentaje de capacidad
   useEffect(() => {
     Animated.parallel([
       Animated.timing(fadeAnim, {
@@ -174,13 +103,16 @@ export default function EventScreen() {
         duration: 800,
         useNativeDriver: true,
       }),
-      Animated.timing(capacityWidthAnim, {
-        toValue: 100 - capacityPercentage,
-        duration: 1200,
-        useNativeDriver: false,
-      }),
     ]).start();
   }, []);
+
+  useEffect(() => {
+    Animated.timing(capacityWidthAnim, {
+      toValue: 100 - capacityPercentage,
+      duration: 700,
+      useNativeDriver: false,
+    }).start();
+  }, [capacityPercentage]);
 
   if (loading) {
     return (
@@ -206,8 +138,7 @@ export default function EventScreen() {
     );
   }
 
-  // Map the fetched event data to our EventData interface.
-  // You may choose to format dates as needed.
+  // Mapear datos al tipo EventData
   const eventData: EventData = {
     id: event.id,
     titulo: event.titulo,
@@ -223,22 +154,22 @@ export default function EventScreen() {
       ? new Date(event.fecha_limite_inscripcion).toLocaleDateString()
       : "",
     cupo_total: event.cupo_total || 0,
-    cupo_disponible: event.cupo_disponible || 0,
-    programa: event.programa, // Assuming this is already in the desired format (e.g. an array)
-    testimonios: event.testimonios, // Assuming this is already in the desired format
-    faqs: event.faqs, // Assuming this is already in the desired format
+    programa: event.programa,
+    testimonios: event.testimonios,
+    faqs: event.faqs,
     creado_en: event.creado_en
       ? new Date(event.creado_en).toLocaleDateString()
       : "",
+    inscritos: event.inscritos || 0,
   };
 
+  // Handlers
   const openMap = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     const scheme = Platform.select({
       ios: "maps:0,0?q=",
       android: "geo:0,0?q=",
     });
-    // Here we use the latitud and longitud from the event data
     const latLng = `${eventData.latitud},${eventData.longitud}`;
     const label = eventData.lugar_nombre;
     const url = Platform.select({
@@ -254,32 +185,6 @@ export default function EventScreen() {
     Linking.openURL(`whatsapp://send?text=${encodeURIComponent(message)}`);
   };
 
-  const handleRegister = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setIsRegistering(true);
-    setTimeout(() => {
-      setAvailableSpots((prev) => Math.max(0, prev - 1));
-      setIsRegistering(false);
-      Animated.sequence([
-        Animated.timing(scaleAnim, {
-          toValue: 1.05,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-        Animated.timing(scaleAnim, {
-          toValue: 1,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-      ]).start();
-      Animated.timing(capacityWidthAnim, {
-        toValue: 100 - ((availableSpots - 1) / totalCapacity) * 100,
-        duration: 500,
-        useNativeDriver: false,
-      }).start();
-    }, 1500);
-  };
-
   const toggleFaq = (index: number) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setExpandedFaq(expandedFaq === index ? null : index);
@@ -287,15 +192,11 @@ export default function EventScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["bottom"]}>
-      <AnimatedHeader scrollY={scrollY} />
+      <HeaderMenu />
+
       <Animated.ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          { useNativeDriver: true }
-        )}
-        scrollEventThrottle={16}
         style={{ opacity: fadeAnim, transform: [{ scale: scaleAnim }] }}
       >
         {/* Hero Section */}
@@ -331,15 +232,17 @@ export default function EventScreen() {
             </View>
           </View>
         </View>
+
         {/* Main Content Area */}
         <View style={styles.mainContentArea}>
+          {/* Registro */}
           <Animated.View style={[styles.card, styles.registrationCard]}>
             <View style={styles.registrationStatusContainer}>
               <Text style={styles.registrationStatusText}>
                 Inscripciones abiertas
               </Text>
               <View style={styles.spotInfoContainer}>
-                <Text style={styles.availableSpotsText}>{availableSpots}</Text>
+                <Text style={styles.availableSpotsText}>{plazasLibres}</Text>
                 <Text style={styles.totalSpotsText}>
                   /{totalCapacity} plazas disponibles
                 </Text>
@@ -348,14 +251,11 @@ export default function EventScreen() {
                 Fecha límite: {eventData.fecha_limite_inscripcion}
               </Text>
               <View style={styles.capacityBarContainer}>
-                <Animated.View
+                <View
                   style={[
                     styles.capacityBarFill,
                     {
-                      width: capacityWidthAnim.interpolate({
-                        inputRange: [0, 100],
-                        outputRange: ["0%", "100%"],
-                      }),
+                      width: `${capacityPercentage}%`, // ¡Barra proporcional!
                     },
                   ]}
                 />
@@ -364,29 +264,34 @@ export default function EventScreen() {
             <TouchableOpacity
               style={[
                 styles.registerButton,
-                isRegistering && styles.registerButtonDisabled,
+                inscripcionCerrada && { backgroundColor: "rgb(119, 119, 119)" }, // gris si cerrado
               ]}
-              onPress={handleRegister}
-              disabled={isRegistering}
+              onPress={() => setModalVisible(true)}
+              disabled={inscripcionCerrada || inscLoading}
             >
-              {isRegistering ? (
-                <View style={styles.loadingContainer}>
-                  <Text style={styles.registerButtonText}>Procesando</Text>
-                  <RNActivityIndicator
-                    size="small"
-                    color={COLORS.text.light}
-                    style={styles.loadingIndicator}
-                  />
-                </View>
+              {inscripcionCerrada ? (
+                <Text style={[styles.registerButtonText, { color: "#888" }]}>
+                  {eventoLleno
+                    ? "Evento lleno"
+                    : plazoFinalizado
+                    ? "Inscripción cerrada"
+                    : "No disponible"}
+                </Text>
+              ) : inscLoading ? (
+                <RNActivityIndicator size="small" color={COLORS.background} />
               ) : (
                 <Text style={styles.registerButtonText}>Inscribirse</Text>
               )}
             </TouchableOpacity>
           </Animated.View>
+
+          {/* Descripción */}
           <View style={styles.sectionContainer}>
             <Text style={styles.sectionTitle}>Descripción del Evento</Text>
             <Text style={styles.descriptionText}>{eventData.descripcion}</Text>
           </View>
+
+          {/* Ubicación */}
           <View style={styles.sectionContainer}>
             <Text style={styles.sectionTitle}>Ubicación</Text>
             <View style={styles.card}>
@@ -411,111 +316,95 @@ export default function EventScreen() {
                   </TouchableOpacity>
                 </View>
               </View>
-              <View style={styles.mapContainer}>
-                {/*
-                <MapView
-                  style={styles.map}
-                  initialRegion={{
-                    latitude: parseFloat(eventData.latitud),
-                    longitude: parseFloat(eventData.longitud),
-                    latitudeDelta: 0.01,
-                    longitudeDelta: 0.01,
-                  }}
-                >
-                  <Marker
-                    coordinate={{
-                      latitude: parseFloat(eventData.latitud),
-                      longitude: parseFloat(eventData.longitud),
-                    }}
-                    title={eventData.lugar_nombre}
-                  />
-                </MapView>
-                */}
-              </View>
+              {/* MapView deshabilitado */}
             </View>
           </View>
+
+          {/* Programa */}
           <View style={styles.sectionContainer}>
             <Text style={styles.sectionTitle}>Programa</Text>
             <View style={styles.card}>
-              {eventData.programa?.map((programa: any, index: number) => (
-                <View key={index} style={styles.scheduleItem}>
+              {eventData.programa?.map((item: any, idx: any) => (
+                <View key={idx} style={styles.scheduleItem}>
                   <View style={styles.scheduleTimeContainer}>
-                    <Text style={styles.scheduleTime}>{programa.time}</Text>
+                    <Text style={styles.scheduleTime}>{item.time}</Text>
                   </View>
                   <View style={styles.scheduleTimelineContainer}>
                     <View
                       style={[
                         styles.scheduleTimeline,
-                        index === eventData.programa.length - 1 &&
+                        idx === eventData.programa.length - 1 &&
                           styles.lastScheduleTimeline,
                       ]}
                     />
                     <View style={styles.scheduleTimelineDot} />
                   </View>
                   <View style={styles.scheduleActivityContainer}>
-                    <Text style={styles.scheduleActivity}>
-                      {programa.activity}
-                    </Text>
+                    <Text style={styles.scheduleActivity}>{item.activity}</Text>
                   </View>
                 </View>
               ))}
             </View>
           </View>
+
+          {/* Galería */}
           <View style={[styles.sectionContainer, { marginBottom: 16 }]}>
             <Text style={styles.sectionTitle}>Galería</Text>
             <GallerySlider />
           </View>
+
+          {/* Testimonios */}
           <View style={styles.sectionContainer}>
             <Text style={[styles.sectionTitle, { marginTop: 0 }]}>
               Testimonios
             </Text>
-            {eventData.testimonios?.map((testimonios: any, index: number) => (
-              <View key={index} style={[styles.card, styles.testimonialCard]}>
-                <Text style={styles.testimonialText}>"{testimonios.text}"</Text>
+            {eventData.testimonios?.map((t: any, idx: any) => (
+              <View key={idx} style={[styles.card, styles.testimonialCard]}>
+                <Text style={styles.testimonialText}>"{t.text}"</Text>
                 <View style={styles.testimonialAuthorContainer}>
                   <View style={styles.testimonialAvatar}>
                     <Text style={styles.testimonialAvatarText}>
-                      {testimonios.name.charAt(0)}
+                      {t.name.charAt(0)}
                     </Text>
                   </View>
                   <View style={styles.testimonialAuthorInfo}>
-                    <Text style={styles.testimonialName}>
-                      {testimonios.name}
-                    </Text>
-                    <Text style={styles.testimonialRole}>
-                      {testimonios.role}
-                    </Text>
+                    <Text style={styles.testimonialName}>{t.name}</Text>
+                    <Text style={styles.testimonialRole}>{t.role}</Text>
                   </View>
                 </View>
               </View>
             ))}
           </View>
+
+          {/* FAQs */}
           <View style={styles.sectionContainer}>
             <Text style={styles.sectionTitle}>Preguntas Frecuentes</Text>
-            {eventData.faqs?.map((faq: any, index: number) => (
+            {eventData.faqs?.map((f: any, idx: any) => (
               <TouchableOpacity
-                key={index}
+                key={idx}
                 style={[styles.card, styles.faqCard]}
-                onPress={() => toggleFaq(index)}
+                onPress={() => toggleFaq(idx)}
                 activeOpacity={0.8}
               >
                 <View style={styles.faqHeader}>
-                  <Text style={styles.faqQuestion}>{faq.question}</Text>
+                  <Text style={styles.faqQuestion}>{f.question}</Text>
                   <ChevronDown
                     size={20}
                     color={COLORS.primary}
                     style={[
                       styles.faqIcon,
-                      expandedFaq === index && styles.faqIconExpanded,
+                      expandedFaq === idx && styles.faqIconExpanded,
                     ]}
                   />
                 </View>
-                {expandedFaq === index && (
-                  <Text style={styles.faqAnswer}>{faq.answer}</Text>
+                {expandedFaq === idx && (
+                  <Text style={styles.faqAnswer}>{f.answer}</Text>
                 )}
               </TouchableOpacity>
             ))}
           </View>
+
+          {/* Compartir */}
           <View style={styles.sectionContainer}>
             <Text style={styles.sectionTitle}>Comparte este evento</Text>
             <View style={styles.card}>
@@ -562,55 +451,78 @@ export default function EventScreen() {
           </View>
         </View>
       </Animated.ScrollView>
+
+      <Modal
+        visible={modalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={modalStyles.overlay}>
+          <View style={modalStyles.container}>
+            <Text style={modalStyles.title}>Confirma tu contraseña</Text>
+            <TextInput
+              placeholder="Contraseña"
+              secureTextEntry
+              value={password}
+              onChangeText={setPassword}
+              style={modalStyles.input}
+            />
+            {successMsg !== "" && (
+              <Text
+                style={{
+                  color: "green",
+                  textAlign: "center",
+                  marginVertical: 8,
+                }}
+              >
+                {successMsg}
+              </Text>
+            )}
+            {inscError && (
+              <Text style={modalStyles.error}>
+                {getFriendlyErrorMessage(inscError)}
+              </Text>
+            )}
+            <View style={modalStyles.buttonsRow}>
+              <TouchableOpacity
+                onPress={() => {
+                  setModalVisible(false);
+                  setPassword("");
+                  setSuccessMsg("");
+                }}
+              >
+                <Text style={modalStyles.buttonText}>Cancelar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={async () => {
+                  try {
+                    await inscribirseEnEvento(eventId, password);
+                    setSuccessMsg("¡Inscripción exitosa!");
+                    await refetch(); // <-- ACTUALIZA LOS DATOS DEL EVENTO
+                  } catch (e) {
+                    // Ya se muestra inscError
+                  } finally {
+                    setTimeout(() => {
+                      setModalVisible(false);
+                      setPassword("");
+                      setSuccessMsg("");
+                    }, 1500);
+                  }
+                }}
+                disabled={inscLoading || successMsg !== ""}
+              >
+                <Text style={modalStyles.buttonText}>Confirmar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+      {/* Footer fijo */}
       <FooterMenu style={styles.footerMenu} isDark={false} />
     </SafeAreaView>
   );
 }
-
-interface ActivityIndicatorProps {
-  size: "small" | "large";
-  color: string;
-  style?: any;
-}
-
-const ActivityIndicator: React.FC<ActivityIndicatorProps> = ({
-  size,
-  color,
-  style,
-}) => {
-  const spinValue = useRef(new Animated.Value(0)).current;
-  useEffect(() => {
-    const animation = Animated.loop(
-      Animated.timing(spinValue, {
-        toValue: 1,
-        duration: 1000,
-        useNativeDriver: true,
-      })
-    );
-    animation.start();
-    return () => animation.stop();
-  }, []);
-  const spin = spinValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: ["0deg", "360deg"],
-  });
-  return (
-    <Animated.View
-      style={[
-        {
-          width: size === "small" ? 16 : 24,
-          height: size === "small" ? 16 : 24,
-          borderRadius: size === "small" ? 8 : 12,
-          borderWidth: 2,
-          borderColor: color,
-          borderTopColor: "transparent",
-          transform: [{ rotate: spin }],
-        },
-        style,
-      ]}
-    />
-  );
-};
 
 const styles = StyleSheet.create({
   safeArea: {
@@ -645,7 +557,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   heroTitle: {
-    fontFamily: "GT-America-Trial",
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
     fontSize: 32,
     fontWeight: "bold",
     color: COLORS.text.light,
@@ -667,7 +579,7 @@ const styles = StyleSheet.create({
   },
   heroInfoText: {
     color: COLORS.text.light,
-    fontFamily: "GT-America-Trial",
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
     fontSize: 14,
     marginLeft: 5,
     textShadowColor: "rgba(0, 0, 0, 0.75)",
@@ -699,7 +611,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   registrationStatusText: {
-    fontFamily: "GT-America-Trial",
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
     fontSize: 18,
     fontWeight: "bold",
     color: COLORS.primary,
@@ -711,19 +623,19 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   availableSpotsText: {
-    fontFamily: "GT-America-Trial",
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
     fontSize: 24,
     fontWeight: "bold",
     color: COLORS.primary,
   },
   totalSpotsText: {
-    fontFamily: "GT-America-Trial",
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
     fontSize: 16,
     color: COLORS.text.dark,
     marginLeft: 2,
   },
   registrationDeadlineText: {
-    fontFamily: "GT-America-Trial",
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
     fontSize: 14,
     color: COLORS.text.dark,
     marginBottom: 12,
@@ -744,35 +656,24 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: "center",
   },
-  registerButtonDisabled: {
-    backgroundColor: "rgba(187, 75, 54, 0.7)",
-  },
   registerButtonText: {
     color: COLORS.background,
-    fontFamily: "GT-America-Trial",
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
     fontSize: 16,
     fontWeight: "bold",
-  },
-  loadingContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  loadingIndicator: {
-    marginLeft: 8,
   },
   sectionContainer: {
     marginBottom: 24,
   },
   sectionTitle: {
-    fontFamily: "GT-America-Trial",
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
     fontSize: 22,
     fontWeight: "bold",
     color: COLORS.primary,
     marginBottom: 12,
   },
   descriptionText: {
-    fontFamily: "GT-America-Trial",
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
     fontSize: 16,
     lineHeight: 24,
     color: COLORS.text.dark,
@@ -792,14 +693,14 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   locationName: {
-    fontFamily: "GT-America-Trial",
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
     fontSize: 18,
     fontWeight: "bold",
     color: COLORS.primary,
     marginBottom: 5,
   },
   locationAddress: {
-    fontFamily: "GT-America-Trial",
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
     fontSize: 14,
     color: COLORS.text.dark,
     marginBottom: 10,
@@ -814,20 +715,11 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
   },
   directionButtonText: {
-    fontFamily: "GT-America-Trial",
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
     fontSize: 14,
     color: COLORS.primary,
     marginRight: 5,
     fontWeight: "500",
-  },
-  mapContainer: {
-    height: 180,
-    borderRadius: 12,
-    overflow: "hidden",
-  },
-  map: {
-    width: "100%",
-    height: "100%",
   },
   scheduleItem: {
     flexDirection: "row",
@@ -839,7 +731,7 @@ const styles = StyleSheet.create({
     paddingRight: 10,
   },
   scheduleTime: {
-    fontFamily: "GT-America-Trial",
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
     fontSize: 14,
     color: COLORS.primary,
     fontWeight: "bold",
@@ -871,7 +763,7 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
   },
   scheduleActivity: {
-    fontFamily: "GT-America-Trial",
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
     fontSize: 14,
     color: COLORS.text.dark,
   },
@@ -879,7 +771,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   testimonialText: {
-    fontFamily: "GT-America-Trial",
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
     fontSize: 14,
     fontStyle: "italic",
     color: COLORS.text.dark,
@@ -908,13 +800,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   testimonialName: {
-    fontFamily: "GT-America-Trial",
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
     fontSize: 14,
     fontWeight: "bold",
     color: COLORS.primary,
   },
   testimonialRole: {
-    fontFamily: "GT-America-Trial",
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
     fontSize: 12,
     color: COLORS.text.dark,
   },
@@ -927,7 +819,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   faqQuestion: {
-    fontFamily: "GT-America-Trial",
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
     fontSize: 16,
     fontWeight: "bold",
     color: COLORS.primary,
@@ -940,7 +832,7 @@ const styles = StyleSheet.create({
     transform: [{ rotate: "180deg" }],
   },
   faqAnswer: {
-    fontFamily: "GT-America-Trial",
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
     fontSize: 14,
     color: COLORS.text.dark,
     marginTop: 10,
@@ -949,7 +841,7 @@ const styles = StyleSheet.create({
     borderTopColor: "rgba(187, 75, 54, 0.1)",
   },
   socialText: {
-    fontFamily: "GT-America-Trial",
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
     fontSize: 14,
     color: COLORS.text.dark,
     marginBottom: 16,
@@ -976,5 +868,46 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     marginTop: -40,
+  },
+});
+const modalStyles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  container: {
+    width: "80%",
+    backgroundColor: COLORS.text.light,
+    borderRadius: 12,
+    padding: 16,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 12,
+    color: COLORS.text.dark,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    borderRadius: 8,
+    padding: 8,
+    marginBottom: 8,
+  },
+  error: {
+    color: "red",
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  buttonsRow: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+  },
+  buttonText: {
+    color: COLORS.primary,
+    fontWeight: "600",
+    marginLeft: 16,
   },
 });

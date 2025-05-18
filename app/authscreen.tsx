@@ -11,6 +11,7 @@ import {
   SafeAreaView,
   ScrollView,
   Dimensions,
+  Image,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
@@ -52,7 +53,10 @@ const AuthScreen: React.FC = () => {
         });
         console.log("Login successful");
         await new Promise((resolve) => setTimeout(resolve, 100));
-        router.replace(`/index`);
+        // CORRECT:
+        router.replace({
+          pathname: "/homescreen",
+        });
       } else {
         if (password !== confirmPassword) {
           Alert.alert("Error", "Passwords do not match");
@@ -79,14 +83,16 @@ const AuthScreen: React.FC = () => {
       style={[styles.container, { backgroundColor: COLORS.text.dark }]}
     >
       <StatusBar style="light" />
+
       <LinearGradient
         colors={[COLORS.text.dark, COLORS.text.dark]}
         style={styles.gradient}
       >
+        <Image
+          source={require("../assets/images/LogoLetras.png")}
+          style={[styles.logo, { tintColor: COLORS.background }]}
+        />
         {/* Fixed header with logo at the top */}
-        <View style={styles.header}>
-          <Text style={styles.logo}>finder</Text>
-        </View>
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           style={styles.keyboardAvoidingView}
@@ -209,14 +215,15 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   logo: {
-    fontFamily: "Lobster_400Regular",
-    fontSize: 40,
-    color: "#B64B37",
-    textAlign: "center",
-    paddingVertical: 20,
+    width: 120,
+    height: 40,
+    color: COLORS.text.light,
+    alignContent: "center",
+    alignSelf: "center",
+    marginTop: 30,
   },
   card: {
-    backgroundColor: "#FFF",
+    backgroundColor: COLORS.text.light,
     borderRadius: 20,
     padding: 20,
     alignSelf: "center", // center on all platforms
@@ -234,33 +241,37 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     marginBottom: 20,
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
   },
   toggleButton: {
     paddingVertical: 10,
     paddingHorizontal: 20,
     marginHorizontal: 5,
     borderRadius: 20,
-    backgroundColor: "#F0F0F0",
+    backgroundColor: "rgba(197, 186, 170, 0.84)",
   },
   activeToggle: {
     backgroundColor: "#B64B37",
   },
   toggleText: {
     fontSize: 16,
-    color: "#666",
+    color: COLORS.text.black,
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
   },
   activeToggleText: {
-    color: "#FFF",
+    color: COLORS.text.light,
     fontWeight: "bold",
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
   },
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 15,
     borderWidth: 1,
-    borderColor: "#DDD",
+    borderColor: COLORS.text.black,
     borderRadius: 12,
-    backgroundColor: "#F9F9F9",
+    backgroundColor: "rgba(253, 245, 234, 0.93)",
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
   },
   inputIcon: {
     padding: 10,
@@ -270,7 +281,8 @@ const styles = StyleSheet.create({
     height: 50,
     paddingHorizontal: 10,
     fontSize: 16,
-    color: "#333",
+    color: COLORS.text.black,
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
   },
   submitButton: {
     backgroundColor: "#B64B37",
@@ -278,16 +290,19 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
     marginTop: 20,
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
   },
   submitButtonText: {
-    color: "#FFF",
+    color: COLORS.text.light,
     fontSize: 16,
     fontWeight: "bold",
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
   },
   errorText: {
     color: "#B64B37",
     marginTop: 10,
     textAlign: "center",
+    fontFamily: "GT-America-Standard-Black-Trial.otf",
   },
 });
 

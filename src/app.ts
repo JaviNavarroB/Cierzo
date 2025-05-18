@@ -5,8 +5,11 @@ import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import path from 'path';
-
+import sportRoutes from "../routes/sport.routes";
 import eventRoutes from '../routes/event.routes';
+import usuarioRoutes from '../routes/usuario.routes';
+import equipoRoutes from '../routes/equipo.routes';
+import inscripcionRoutes from '../routes/inscripcion.routes';
 
 import pool from '../database/database';
 import jwt from 'jsonwebtoken';
@@ -30,6 +33,31 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Rutas API (se montan con el prefijo /api)
 app.use('/api/events', eventRoutes);
 
+// Servir estáticamente las fotos de jugadores:
+//   – carpeta física: <proyecto>/assets/images/players/
+//   – URL pública:   /players/<nombre-fichero>
+app.use(
+    '/players',
+    express.static(
+      path.join(__dirname, '..', 'assets', 'images', 'players'),
+      { fallthrough: false }
+    )
+  );
+
+  app.use(
+    '/sports',
+    express.static(
+      path.join(__dirname, '..', 'assets', 'images', 'sports'),
+      { fallthrough: false }
+    )
+  );
+
+
+app.use('/api', sportRoutes);
+app.use('/api', equipoRoutes);
+app.use('/api', inscripcionRoutes);
+
+app.use("/api/user", usuarioRoutes);
 
 // SERVIR EL FRONTEND
 // Suponiendo que la build web de tu app se encuentra en la carpeta 'web-build' en la raíz del proyecto.

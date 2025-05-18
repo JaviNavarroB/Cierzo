@@ -1,5 +1,6 @@
 // frontend/src/hooks/useEvents.ts
 import { useState, useEffect } from 'react';
+import SERVER_URL from "../constants/Server";
 
 export interface EventType {
   id: number;
@@ -10,7 +11,8 @@ export interface EventType {
   hora_fin?: string;
   lugar_nombre?: string;
   direccion?: string;
-  fecha_limite_inscripcion?: string;
+    fecha_limite_inscripcion?: string;
+    roles_admitidos?: string;
   // ... etc. add more fields as needed
 }
 
@@ -23,7 +25,7 @@ export function useEvents() {
     async function fetchEvents() {
       try {
         // Adjust URL if your server is not on localhost:3000
-        const response = await fetch('/api/events/events');
+        const response = await fetch(`${SERVER_URL}/events/events`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }

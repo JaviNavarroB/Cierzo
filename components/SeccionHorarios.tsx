@@ -1,30 +1,62 @@
-"use client";
-
-import { useState } from "react";
 import {
   StyleSheet,
   View,
   ScrollView,
   Image,
   Text,
-  Dimensions,
   Platform,
   useWindowDimensions,
-  TouchableOpacity, // ...new import
+  TouchableOpacity,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FontAwesome } from "@expo/vector-icons";
 import { COLORS } from "@/constants/theme";
-import { LinearGradient } from "expo-linear-gradient"; // ...new import
-import * as Haptics from "expo-haptics"; // ...new import
+import { LinearGradient } from "expo-linear-gradient";
+import * as Haptics from "expo-haptics";
 
-const screenWidth = Dimensions.get("window").width;
-const halfWidth = screenWidth / 2;
+export interface HorarioItem {
+  dia: string;
+  hora?: string;
+}
 
-export default function SeccionHorarios() {
+export interface PabellonInfo {
+  nombre: string;
+  direccion: string;
+  descripcion: string;
+  imagenUri?: string;
+}
+
+export interface CuotasInfo {
+  cuota_mensual: number;
+  cuota_anual_federacion: number;
+}
+export interface Texto {
+  descripcion: string;
+  cta_titulo: string;
+  cta_texto: string;
+}
+
+interface Props {
+  horario: HorarioItem[];
+  activeTab: "horario" | "cuotas" | "pabellon";
+  onTabChange: (tab: "horario" | "cuotas" | "pabellon") => void;
+  cuotas: CuotasInfo;
+  pabellon: PabellonInfo;
+  texto: Texto;
+  foto: string | undefined;
+}
+
+export default function SeccionHorarios({
+  horario,
+  activeTab,
+  onTabChange,
+  cuotas,
+  pabellon,
+  texto,
+  foto,
+}: Props) {
   const { width } = useWindowDimensions();
   const isMobile = Platform.OS !== "web" || width < 768;
-  const [activeTab, setActiveTab] = useState("horario");
 
   const renderContent = () => {
     switch (activeTab) {
@@ -33,17 +65,20 @@ export default function SeccionHorarios() {
           <View style={styles.pabellonContainer}>
             <View style={styles.pabellonImageContainer}>
               <Image
-                source={require("../assets/images/pabellon.jpg")}
+                source={{
+                  uri:
+                    pabellon.imagenUri ||
+                    require("../assets/images/pabellon.jpg"),
+                }}
                 style={styles.pabellonImage}
                 resizeMode="cover"
               />
             </View>
             <View style={styles.pabellonInfo}>
-              <Text style={styles.pabellonTitle}>Pabellón Municipal</Text>
-              <Text style={styles.pabellonAddress}>Calle Principal, 123</Text>
+              <Text style={styles.pabellonTitle}>{pabellon.nombre}</Text>
+              <Text style={styles.pabellonAddress}>{pabellon.direccion}</Text>
               <Text style={styles.pabellonDescription}>
-                Instalaciones deportivas con cancha de baloncesto reglamentaria,
-                vestuarios y gradas para espectadores.
+                {pabellon.descripcion}
               </Text>
             </View>
           </View>
@@ -54,7 +89,7 @@ export default function SeccionHorarios() {
             <View style={styles.cuotasContent}>
               {/* Left Column - Actividad */}
               <View style={styles.cuotasColumn}>
-                <Text style={styles.priceNumber}>30</Text>
+                <Text style={styles.priceNumber}>{cuotas.cuota_mensual}</Text>
                 <Text style={styles.priceUnit}>euros/mes</Text>
                 <Text style={styles.priceLabel}>ACTIVIDAD</Text>
               </View>
@@ -64,7 +99,9 @@ export default function SeccionHorarios() {
 
               {/* Right Column - Federacion */}
               <View style={styles.cuotasColumn}>
-                <Text style={styles.priceNumber}>83</Text>
+                <Text style={styles.priceNumber}>
+                  {cuotas.cuota_anual_federacion}
+                </Text>
                 <Text style={styles.priceUnit}>euros/año</Text>
                 <Text style={styles.priceLabel}>FEDERACIÓN</Text>
               </View>
@@ -74,17 +111,31 @@ export default function SeccionHorarios() {
       default:
         return (
           <View style={styles.scheduleContainer}>
-            <View style={styles.scheduleItem}>
-              <Text style={styles.scheduleDay}>Martes</Text>
-              <Text style={styles.scheduleTime}>21:00-22:30</Text>
-            </View>
-            <View style={styles.scheduleItem}>
-              <Text style={styles.scheduleDay}>Jueves</Text>
-              <Text style={styles.scheduleTime}>21:00-22:30</Text>
-            </View>
-            <View style={[styles.scheduleItem, styles.weekendSchedule]}>
-              <Text style={styles.weekendText}>Sábado/Domingo</Text>
-            </View>
+            {horario.length > 0 ? (
+              horario.map((item, index) => (
+                <View key={index} style={styles.scheduleItem}>
+                  <Text style={styles.scheduleDay}>{item.dia}</Text>
+                  {item.hora && (
+                    <Text style={styles.scheduleTime}>{item.hora}</Text>
+                  )}
+                </View>
+              ))
+            ) : (
+              // Horario por defecto si no hay datos
+              <>
+                <View style={styles.scheduleItem}>
+                  <Text style={styles.scheduleDay}>Martes</Text>
+                  <Text style={styles.scheduleTime}>21:00-22:30</Text>
+                </View>
+                <View style={styles.scheduleItem}>
+                  <Text style={styles.scheduleDay}>Jueves</Text>
+                  <Text style={styles.scheduleTime}>21:00-22:30</Text>
+                </View>
+                <View style={[styles.scheduleItem, styles.weekendSchedule]}>
+                  <Text style={styles.weekendText}>Sábado/Domingo</Text>
+                </View>
+              </>
+            )}
             <View
               style={{
                 flexDirection: "row",
@@ -134,7 +185,7 @@ export default function SeccionHorarios() {
               >
                 <Image
                   source={{
-                    uri: "https://www.walashop.com/storyblok/f/191463/768x450/9811023932/basquet-mobile.jpg",
+                    uri: foto,
                   }}
                   style={styles.image}
                   resizeMode="cover"
@@ -159,7 +210,7 @@ export default function SeccionHorarios() {
                       : styles.navItemInactive,
                     styles.navItemLeft,
                   ]}
-                  onPress={() => setActiveTab("horario")}
+                  onPress={() => onTabChange("horario")}
                 >
                   Horario
                 </Text>
@@ -170,7 +221,7 @@ export default function SeccionHorarios() {
                       ? styles.navItemActive
                       : styles.navItemInactive,
                   ]}
-                  onPress={() => setActiveTab("cuotas")}
+                  onPress={() => onTabChange("cuotas")}
                 >
                   Cuotas
                 </Text>
@@ -182,7 +233,7 @@ export default function SeccionHorarios() {
                       : styles.navItemInactive,
                     styles.navItemRight,
                   ]}
-                  onPress={() => setActiveTab("pabellon")}
+                  onPress={() => onTabChange("pabellon")}
                 >
                   Pabellón
                 </Text>
@@ -212,15 +263,10 @@ export default function SeccionHorarios() {
               isMobile && styles.bottomSectionMobile,
             ]}
           >
-            <Text style={styles.title}>
-              Si buscas no se que este es tu club
-            </Text>
+            <Text style={styles.title}>{texto.cta_titulo}</Text>
             <Text style={[styles.description, styles.justifiedText]}>
-              Lorem ipsum dolor sit amet. Et aperiam omnis ad vero sunt quo
-              voluptatem iure quo voluptas totam ad velit deserunt hic harum
-              recusandae est laborum cupiditate. Sit voluptatem molestiae aut
-              illo unde eos quia esse. In velit laudantium non quam nesciunt non
-              quam minus.
+              {texto.descripcion ||
+                "¡Bienvenido a nuestro equipo! Aquí encontrarás toda la información necesaria para unirte a nosotros y disfrutar de la pasión del deporte."}
             </Text>
           </View>
 
@@ -234,8 +280,8 @@ export default function SeccionHorarios() {
             >
               <Text style={styles.ctaTitle}>¿Listo para unirte?</Text>
               <Text style={styles.ctaDescription}>
-                Forma parte de nuestra comunidad deportiva y disfruta de todos
-                los beneficios
+                {texto.cta_texto ||
+                  "Forma parte de nuestro equipo y vive la pasión del deporte."}
               </Text>
               <TouchableOpacity
                 style={styles.ctaButton}
@@ -388,21 +434,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   title: {
-    fontSize: Platform.select({ web: 80, default: 30 }),
-    fontWeight: "800",
+    fontSize: 50,
+    fontWeight: "900",
     color: COLORS.primary,
     textAlign: "center",
-    lineHeight: Platform.select({ web: 80, default: 35 }),
-    fontFamily: "GT-America-Standard-Bold-Trial.otf",
+    lineHeight: 55,
+    fontFamily: "GT-America-Compressed-Black-Trial.otf",
   },
   description: {
     fontSize: 18,
     lineHeight: 32,
     color: COLORS.primary,
-
     opacity: 0.8,
     letterSpacing: 0.75,
-    marginTop: 8,
+    marginTop: 30,
   },
   joinText: {
     fontSize: 20,

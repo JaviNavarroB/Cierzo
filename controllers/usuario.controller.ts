@@ -9,7 +9,7 @@ export class UsuarioController {
   /* ------------ REGISTRO ------------ */
   public async registerUser(req: Request, res: Response): Promise<void> {
     try {
-      const { Nombre, Correo, Contrasenya, Foto, Descripcion } = req.body;
+      const { Nombre, Correo, Contrasenya } = req.body;
 
       /* Validaciones mínimas */
       if (!Nombre?.trim()) {
@@ -29,8 +29,6 @@ export class UsuarioController {
         nombre: Nombre,
         correo: Correo,
         contrasenya: hashed,
-        foto: Foto ?? 'https://cdn3.pixelcut.app/7/20/uncrop_hero_bdf08a8ca6.jpg',
-        descripcion: Descripcion
       });
 
       res.status(201).json({ userId });
@@ -81,10 +79,9 @@ export class UsuarioController {
         return;
       }
 
-      const { Foto, Descripcion } = req.body;
+      const { Foto} = req.body;
       const updated = await Usuario.updateProfile(currentUserId, {
         foto: Foto,
-        descripcion: Descripcion
       });
 
       const authHeader = req.headers.authorization;
