@@ -94,14 +94,71 @@ class Usuario extends Model<UsuarioAttributes, UsuarioCreation>
     return { ...user, rol: mapIdRolToNombre(user.idRol) };
   }
 
-  /** Actualiza foto  */
-  static async updateProfile(
+ /** Actualiza el perfil completo (nombre, apellidos, correo, foto, contraseña) */
+static async updateProfile(
     userId: number,
-    updates: { foto?: string }
+    updates: {
+      nombre?: string;
+      apellidos?: string;
+      correo?: string;
+      foto?: string;
+        contrasenya?: string; // Hashed
+      genero?: 'Hombre' | 'Mujer' | 'Otro';
+        telefono?: string;
+        idRol?: number;
+    }
   ): Promise<UsuarioPlano> {
+    // Construye dinámicamente la consulta SQL sólo con los campos enviados
+    const fields = [];
+    const values = [];
+  
+    if (updates.nombre !== undefined) {
+      fields.push("nombre = ?");
+      values.push(updates.nombre);
+    }
+    if (updates.apellidos !== undefined) {
+      fields.push("apellidos = ?");
+      values.push(updates.apellidos);
+    }
+    if (updates.correo !== undefined) {
+      // Validación básica de correo
+      const correoRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!correoRegex.test(updates.correo)) {
+        throw new Error("Correo no válido");
+      }
+      fields.push("correo = ?");
+      values.push(updates.correo);
+    }
+    if (updates.foto !== undefined) {
+      fields.push("foto = ?");
+      values.push(updates.foto);
+    }
+    if (updates.contrasenya !== undefined) {
+      // Asume que ya está hasheada
+      fields.push("contrasenya = ?");
+      values.push(updates.contrasenya);
+    }
+    if (updates.genero !== undefined) {
+        // Asume que ya está hasheada
+        fields.push("genero = ?");
+        values.push(updates.genero);
+    }
+    if (updates.telefono !== undefined) {
+      fields.push("telefono = ?");
+        values.push(updates.telefono);
+    }
+    if (updates.idRol !== undefined) {
+      fields.push("id_rol = ?");
+      values.push(updates.idRol);
+    }
+  
+    if (!fields.length) throw new Error("No se enviaron campos para actualizar");
+  
+    values.push(userId);
+  
     await pool.query(
-      'UPDATE usuarios SET foto = ? WHERE id = ?',
-      [updates.foto ?? null, userId]
+      `UPDATE usuarios SET ${fields.join(", ")} WHERE id = ?`,
+      values
     );
     const [rows] = await pool.query<RowDataPacket[]>(
       'SELECT * FROM usuarios WHERE id = ?',

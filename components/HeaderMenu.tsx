@@ -21,6 +21,7 @@ import {
 import type { RootStackParamList } from "@/@types/routes.types";
 import { COLORS } from "@/constants/theme";
 import { Menu, X } from "lucide-react-native";
+import { useAuthExported } from "@/contexts/AuthContext";
 
 interface HeaderMenuProps {
   isDark?: boolean;
@@ -29,6 +30,7 @@ interface HeaderMenuProps {
 type Navigation = NavigationProp<RootStackParamList>;
 
 export function HeaderMenu({ isDark = false }: HeaderMenuProps) {
+  const { user } = useAuthExported();
   const navigation = useNavigation<Navigation>();
   const route = useRoute();
   const { width } = useWindowDimensions();
@@ -82,7 +84,11 @@ export function HeaderMenu({ isDark = false }: HeaderMenuProps) {
         duration: 200,
         useNativeDriver: true,
       }).start(() => {
-        navigation.navigate(routeName);
+        if (routeName === "profile") {
+          navigation.navigate("profiles", { id: user.id });
+        } else {
+          navigation.navigate(routeName as any);
+        }
       });
     }
   };
@@ -199,18 +205,18 @@ export function HeaderMenu({ isDark = false }: HeaderMenuProps) {
 
             <TouchableOpacity
               style={[styles.navItem]}
-              onPress={() => navigate("profile")}
+              onPress={() => navigation.navigate("profiles", { id: user.id })}
             >
               <Text
                 style={[
                   styles.navText,
-                  currentRoute === "profile" && styles.activeNavText,
-                  hoveredItem === "profile" && styles.hoveredNavText,
+                  currentRoute === "profiles" && styles.activeNavText,
+                  hoveredItem === "profiles" && styles.hoveredNavText,
                 ]}
               >
                 Perfil
               </Text>
-              {currentRoute === "profile" && (
+              {currentRoute === "profiles" && (
                 <Animated.View
                   style={[
                     styles.activeIndicator,
@@ -365,19 +371,19 @@ export function HeaderMenu({ isDark = false }: HeaderMenuProps) {
               <TouchableOpacity
                 style={[
                   styles.mobileMenuItem,
-                  currentRoute === "profile" && styles.activeMobileMenuItem,
+                  currentRoute === "profiles" && styles.activeMobileMenuItem,
                 ]}
-                onPress={() => navigate("profile")}
+                onPress={() => navigation.navigate("profiles", { id: user.id })}
               >
                 <Text
                   style={[
                     styles.mobileMenuText,
-                    currentRoute === "profile" && styles.activeMobileMenuText,
+                    currentRoute === "profiles" && styles.activeMobileMenuText,
                   ]}
                 >
                   Perfil
                 </Text>
-                {currentRoute === "profile"}
+                {currentRoute === "profiles"}
               </TouchableOpacity>
 
               <TouchableOpacity

@@ -16,7 +16,7 @@ export const useLoginRegister = () => {
     setError(null);
 
     try {
-      const res = await fetch(`${SERVER_URL}/user/login`, {
+      const res = await fetch(`${SERVER_URL}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(credentials)
@@ -45,7 +45,7 @@ export const useLoginRegister = () => {
     setError(null);
 
     try {
-      const res  = await fetch(`${SERVER_URL}/user/register`, {
+      const res  = await fetch(`${SERVER_URL}/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData)

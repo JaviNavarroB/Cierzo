@@ -23,16 +23,18 @@ import { LinearGradient } from "expo-linear-gradient";
 import { ArrowRight, ChevronDown } from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import { StatusBar } from "react-native";
+import { NavigationProp, useNavigation } from "@react-navigation/native";
+import { RootStackParamList } from "@/@types/routes.types";
 
 // Override useLayoutEffect with useEffect on the server
 if (typeof window === "undefined") {
   React.useLayoutEffect = React.useEffect;
 }
-
+type Navigation = NavigationProp<RootStackParamList>;
 export default function HomeScreen() {
   const { width, height } = useWindowDimensions();
   const isMobile = Platform.OS !== "web" || width < 768;
-
+  const navigation = useNavigation<Navigation>();
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const titleAnim = useRef(new Animated.Value(0)).current;
@@ -254,7 +256,7 @@ export default function HomeScreen() {
                   style={styles.joinButton}
                   onPress={() => {
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                    // Navigate to registration or more info
+                    navigation.navigate("member");
                   }}
                 >
                   <Text style={styles.joinButtonText}>Únete ahora</Text>

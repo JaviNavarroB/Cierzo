@@ -31,7 +31,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Rutas API (se montan con el prefijo /api)
-app.use('/api/events', eventRoutes);
+
 
 // Servir estáticamente las fotos de jugadores:
 //   – carpeta física: <proyecto>/assets/images/players/
@@ -56,8 +56,8 @@ app.use(
 app.use('/api', sportRoutes);
 app.use('/api', equipoRoutes);
 app.use('/api', inscripcionRoutes);
-
-app.use("/api/user", usuarioRoutes);
+app.use('/api/events', eventRoutes);
+app.use("/api/", usuarioRoutes);
 
 // SERVIR EL FRONTEND
 // Suponiendo que la build web de tu app se encuentra en la carpeta 'web-build' en la raíz del proyecto.

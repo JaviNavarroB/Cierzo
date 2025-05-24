@@ -15,6 +15,7 @@ import { NavigationProp, useNavigation } from "@react-navigation/native";
 import LogoSVG from "../assets/images/LogoSVG.svg";
 import { COLORS } from "@/constants/theme";
 import { RootStackParamList } from "@/@types/routes.types";
+import { useAuthExported } from "@/contexts/AuthContext";
 
 interface FooterMenuProps {
   style?: StyleProp<ViewStyle>;
@@ -24,6 +25,7 @@ interface FooterMenuProps {
 type Navigation = NavigationProp<RootStackParamList>;
 
 export function FooterMenu({ style, isDark = false }: FooterMenuProps) {
+  const { user } = useAuthExported();
   const navigation = useNavigation<Navigation>();
   const insets = useSafeAreaInsets();
   const { width: FOOTER_WIDTH } = useWindowDimensions();
@@ -132,7 +134,7 @@ export function FooterMenu({ style, isDark = false }: FooterMenuProps) {
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.userButton, { marginRight: -10 }]}
-          onPress={() => navigation.navigate("sports/2")}
+          onPress={() => navigation.navigate("profiles", { id: user.id })}
         >
           <User size={30} color={iconColor} />
         </TouchableOpacity>

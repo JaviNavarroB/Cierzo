@@ -71,7 +71,8 @@ export class UsuarioController {
 
 
   /* ------------ ACTUALIZAR PERFIL ------------ */
-  public async updateProfile(req: Request, res: Response): Promise<void> {
+   // Actualizar perfil
+   public async updateProfile(req: Request, res: Response): Promise<void> {
     try {
       const currentUserId = req.user?.id;
       if (!currentUserId) {
@@ -79,18 +80,93 @@ export class UsuarioController {
         return;
       }
 
-      const { Foto} = req.body;
-      const updated = await Usuario.updateProfile(currentUserId, {
-        foto: Foto,
-      });
+      // Campos del body
+      const { nombre, apellidos, correo, foto, oldPassword, newPassword, genero, telefono, idRol } = req.body;
 
-      const authHeader = req.headers.authorization;
-      const token = authHeader ? authHeader.split(' ')[1] : '';
+      const updateFields: any = {};
 
-      res.json({ message: 'Perfil actualizado', user: { ...updated, token } });
+      // Validar email si quiere cambiarlo
+      if (correo) {
+        const correoRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!correoRegex.test(correo)) {
+          res.status(400).json({ error: 'Correo no válido' });
+          return;
+        }
+        // Verifica si el correo está en uso por otro usuario
+        const existing = await Usuario.getUsuarioByCorreo(correo);
+        if (existing && existing.id !== currentUserId) {
+          res.status(400).json({ error: 'Ese correo ya está en uso.' });
+          return;
+        }
+        updateFields.correo = correo;
+      }
+
+      if (nombre) updateFields.nombre = nombre;
+      if (apellidos !== undefined) updateFields.apellidos = apellidos;
+        if (foto !== undefined) updateFields.foto = foto;
+if (genero !== undefined) updateFields.genero = genero;
+if (telefono !== undefined) updateFields.telefono = telefono;
+        if (idRol !== undefined && idRol === 2) updateFields.idRol = 2;
+        
+
+      // Si el usuario quiere cambiar la contraseña
+      if (newPassword) {
+        if (!oldPassword) {
+          res.status(400).json({ error: "Debes indicar tu contraseña actual para cambiarla." });
+          return;
+        }
+        // Verifica que la contraseña antigua es correcta
+        const user = await Usuario.getUsuarioById(currentUserId);
+        if (!user) {
+          res.status(404).json({ error: "Usuario no encontrado" });
+          return;
+        }
+        const match = await bcrypt.compare(oldPassword, user.contrasenya);
+        if (!match) {
+          res.status(401).json({ error: "La contraseña actual es incorrecta" });
+          return;
+        }
+        // Valida la nueva contraseña (longitud mínima 6)
+        if (newPassword.length < 6) {
+          res.status(400).json({ error: "La nueva contraseña debe tener al menos 6 caracteres" });
+          return;
+        }
+        updateFields.contrasenya = await bcrypt.hash(newPassword, 10);
+      }
+
+      // Si no hay nada que actualizar
+      if (Object.keys(updateFields).length === 0) {
+        res.status(400).json({ error: "No se enviaron datos para actualizar" });
+        return;
+      }
+
+      const updated = await Usuario.updateProfile(currentUserId, updateFields);
+
+      // Si quieres devolver el token nuevo aquí, lo puedes añadir
+      res.json({ message: 'Perfil actualizado', user: updated });
     } catch (err) {
       console.error('updateProfile:', err);
       res.status(500).json({ message: 'Error actualizando perfil' });
     }
-  }
+    }
+    public async getProfile(req: Request, res: Response): Promise<void> {
+        try {
+            const currentUserId = req.user?.id;
+            if (!currentUserId) {
+                res.status(401).json({ error: "Usuario no autenticado" });
+                return;
+            }
+            const usuario = await Usuario.getUsuarioById(currentUserId);
+            if (!usuario) {
+                res.status(404).json({ error: "Usuario no encontrado" });
+                return;
+            }
+            // Nunca devuelvas la contraseña
+            delete (usuario as any).contrasenya;
+            res.json({ user: usuario });
+        } catch (err) {
+            res.status(500).json({ error: "Error obteniendo perfil" });
+        }
+    }    
 }
+
