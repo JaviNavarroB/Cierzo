@@ -32,6 +32,8 @@ import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from "expo-haptics";
 import { useLocalSearchParams } from "expo-router";
 import { useEvent, EventData } from "../../hooks/useEvent";
+import { LeafletMap } from "@/components/LeafletMap";
+import { CrossPlatformMap } from "../../components/CrossPlatformMap";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -163,20 +165,45 @@ export default function EventScreen() {
     inscritos: event.inscritos || 0,
   };
 
-  // Handlers
-  const openMap = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    const scheme = Platform.select({
-      ios: "maps:0,0?q=",
-      android: "geo:0,0?q=",
-    });
-    const latLng = `${eventData.latitud},${eventData.longitud}`;
-    const label = eventData.lugar_nombre;
-    const url = Platform.select({
-      ios: `${scheme}${label}@${latLng}`,
-      android: `${scheme}${latLng}(${label})`,
-    });
-    Linking.openURL(url!);
+  const openInGoogleMaps = async (
+    lat: number,
+    lng: number,
+    placeName: string
+  ) => {
+    try {
+      if (Platform.OS === "web") {
+        // For web, open directly in a new tab
+        window.open(
+          `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`
+        );
+        return;
+      }
+
+      // URI esquema para navegación en Google Maps nativo
+      const urlScheme = Platform.select({
+        ios: `comgooglemaps://?q=${lat},${lng}`,
+        android: `geo:${lat},${lng}?q=${lat},${lng}`,
+        default: "", // for web and other platforms
+      });
+
+      // URI de respaldo a Google Maps web
+      const urlBrowser = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+
+      if (!urlScheme) {
+        return Linking.openURL(urlBrowser);
+      }
+
+      // Primero intentamos abrir la app nativa...
+      const canOpen = await Linking.canOpenURL(urlScheme);
+      if (canOpen) {
+        await Linking.openURL(urlScheme);
+      } else {
+        // ...y si no está instalada, abrimos en el navegador
+        await Linking.openURL(urlBrowser);
+      }
+    } catch (error) {
+      console.error("Error opening maps:", error);
+    }
   };
 
   const shareEvent = () => {
@@ -295,28 +322,48 @@ export default function EventScreen() {
           <View style={styles.sectionContainer}>
             <Text style={styles.sectionTitle}>Ubicación</Text>
             <View style={styles.card}>
-              <View style={styles.locationContainer}>
-                <View style={styles.locationTextContainer}>
-                  <Text style={styles.locationName}>
-                    {eventData.lugar_nombre}
-                  </Text>
-                  <Text style={styles.locationAddress}>
-                    {eventData.direccion}
-                  </Text>
-                  <TouchableOpacity
-                    style={styles.directionButton}
-                    onPress={openMap}
-                  >
-                    <Text style={styles.directionButtonText}>Cómo llegar</Text>
-                    <MaterialIcons
-                      name="directions"
-                      size={16}
-                      color={COLORS.primary}
-                    />
-                  </TouchableOpacity>
-                </View>
+              {/* datos de texto actuales */}
+              <View style={styles.locationTextContainer}>
+                <Text style={styles.locationName}>
+                  {eventData.lugar_nombre}
+                </Text>
+                <Text style={styles.locationAddress}>
+                  {eventData.direccion}
+                </Text>
               </View>
-              {/* MapView deshabilitado */}
+              {/* mapa Leaflet */}
+              <View style={{ marginBottom: 16 }}>
+                <CrossPlatformMap
+                  lat={eventData.latitud ?? 0}
+                  lng={eventData.longitud ?? 0}
+                  zoom={14}
+                />
+              </View>
+              {/* botón “Cómo llegar” que ya tenías */}{" "}
+              <TouchableOpacity
+                style={styles.directionButton}
+                onPress={() => {
+                  // ojo: NO usar navigation.navigate aquí
+                  const lat = Number(eventData.latitud);
+                  const lng = Number(eventData.longitud);
+                  if (isNaN(lat) || isNaN(lng)) {
+                    console.error(
+                      "Invalid coordinates: ",
+                      eventData.latitud,
+                      eventData.longitud
+                    );
+                    return;
+                  }
+                  openInGoogleMaps(lat, lng, eventData.lugar_nombre || "");
+                }}
+              >
+                <Text style={styles.directionButtonText}>Cómo llegar</Text>
+                <MaterialIcons
+                  name="directions"
+                  size={16}
+                  color={COLORS.primary}
+                />
+              </TouchableOpacity>{" "}
             </View>
           </View>
 

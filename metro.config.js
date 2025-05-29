@@ -1,3 +1,4 @@
+// metro.config.js
 const { getDefaultConfig } = require("expo/metro-config");
 const path = require("path");
 
@@ -28,7 +29,9 @@ module.exports = (async () => {
         react: path.resolve(__dirname, "./node_modules/react"),
       },
       // Excluye .svg de assetExts y agrégalo a sourceExts
-      assetExts: assetExts.filter(ext => ext !== "svg").concat(["png", "jpg"]),
+      assetExts: assetExts
+        .filter(ext => ext !== "svg")
+        .concat(["png", "jpg", "html"]),    // ← aquí añadimos "html"
       sourceExts: [...sourceExts, "cjs", "svg"],
     },
   };
