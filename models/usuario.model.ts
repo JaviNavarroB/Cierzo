@@ -8,7 +8,7 @@ import { RowDataPacket, ResultSetHeader } from 'mysql2';
 /* ---------- 1. Interface de atributos ---------- */
 export interface UsuarioAttributes {
   id: number;
-  idRol: number;
+  id_rol: number;
   nombre: string;
   apellidos?: string;
   genero: 'Hombre' | 'Mujer' | 'Otro';
@@ -29,8 +29,8 @@ type UsuarioCreation = Optional<
 export type UsuarioPlano = UsuarioAttributes & { rol: string };
 
 /* ---------- 4. Mapeo de roles ---------- */
-export function mapIdRolToNombre(idRol: number): string {
-  switch (idRol) {
+export function mapIdRolToNombre(id_rol: number): string {
+  switch (id_rol) {
     case 1: return "invitado";
     case 2: return "socio";
     case 3: return "jugador";
@@ -45,7 +45,7 @@ class Usuario extends Model<UsuarioAttributes, UsuarioCreation>
   implements UsuarioAttributes
 {
   public id!: number;
-  public idRol!: number;
+  public id_rol!: number;
   public nombre!: string;
   public apellidos?: string;
   public genero!: 'Hombre' | 'Mujer' | 'Otro';
@@ -63,7 +63,7 @@ class Usuario extends Model<UsuarioAttributes, UsuarioCreation>
       `INSERT INTO usuarios (id_rol, nombre, correo, contrasenya)
        VALUES (?, ?, ?, ?)`,
       [
-        u.idRol ?? 1,   // Invitado por defecto
+        u.id_rol ?? 1,   // Invitado por defecto
         u.nombre,
         u.correo,
         u.contrasenya
@@ -80,7 +80,7 @@ class Usuario extends Model<UsuarioAttributes, UsuarioCreation>
     );
     if (!rows.length) return null;
     const user = rows[0] as UsuarioAttributes;
-    return { ...user, rol: mapIdRolToNombre(user.idRol) };
+    return { ...user, rol: mapIdRolToNombre(user.id_rol) };
   }
 
   /** Busca usuario por id y añade el nombre del rol */
@@ -91,7 +91,7 @@ class Usuario extends Model<UsuarioAttributes, UsuarioCreation>
     );
     if (!rows.length) return null;
     const user = rows[0] as UsuarioAttributes;
-    return { ...user, rol: mapIdRolToNombre(user.idRol) };
+    return { ...user, rol: mapIdRolToNombre(user.id_rol) };
   }
 
  /** Actualiza el perfil completo (nombre, apellidos, correo, foto, contraseña) */
@@ -105,7 +105,7 @@ static async updateProfile(
         contrasenya?: string; // Hashed
       genero?: 'Hombre' | 'Mujer' | 'Otro';
         telefono?: string;
-        idRol?: number;
+        id_rol?: number;
     }
   ): Promise<UsuarioPlano> {
     // Construye dinámicamente la consulta SQL sólo con los campos enviados
@@ -147,9 +147,9 @@ static async updateProfile(
       fields.push("telefono = ?");
         values.push(updates.telefono);
     }
-    if (updates.idRol !== undefined) {
+    if (updates.id_rol !== undefined) {
       fields.push("id_rol = ?");
-      values.push(updates.idRol);
+      values.push(updates.id_rol);
     }
   
     if (!fields.length) throw new Error("No se enviaron campos para actualizar");
@@ -166,7 +166,7 @@ static async updateProfile(
     );
     if (!rows.length) throw new Error('User not found');
     const user = rows[0] as UsuarioAttributes;
-    return { ...user, rol: mapIdRolToNombre(user.idRol) };
+    return { ...user, rol: mapIdRolToNombre(user.id_rol) };
   }
 }
 
@@ -179,7 +179,7 @@ Usuario.init(
       primaryKey: true,
       field: 'id'
     },
-    idRol: {
+    id_rol: {
       type: DataTypes.INTEGER.UNSIGNED,
       allowNull: false,
       field: 'id_rol'

@@ -40,7 +40,7 @@ export default function BecomeMemberScreen() {
   const [registered, setRegistered] = useState(false);
 
   useEffect(() => {
-    if (user?.idRol === 2) {
+    if (user?.id_rol === 2) {
       setSuccessMsg("Ya eres socio. Redirigiendo...");
       setRedirecting(true);
       setTimeout(() => {
@@ -50,7 +50,7 @@ export default function BecomeMemberScreen() {
   }, [user, navigation]);
 
   const handleSubmit = async () => {
-    if (user?.idRol === 2) {
+    if (user?.id_rol === 2) {
       setSuccessMsg("Ya eres socio");
       return;
     }
@@ -68,7 +68,7 @@ export default function BecomeMemberScreen() {
         apellidos,
         genero,
         telefono,
-        idRol: 2,
+        id_rol: 2,
       });
       setRegistered(true);
       setSuccessMsg("¡Ahora eres socio! 🎉");
@@ -80,7 +80,7 @@ export default function BecomeMemberScreen() {
     }
   };
 
-  if (user?.idRol === 2 || redirecting) {
+  if (user?.id_rol === 2 || redirecting) {
     return (
       <SafeAreaView style={styles.safeArea}>
         <HeaderMenu />
@@ -155,15 +155,16 @@ export default function BecomeMemberScreen() {
         <TouchableOpacity
           style={[
             styles.button,
-            (loading || registered || user?.idRol === 2) && styles.buttonDisabled,
+            (loading || registered || user?.id_rol === 2) &&
+              styles.buttonDisabled,
           ]}
           onPress={handleSubmit}
-          disabled={loading || registered || user?.idRol === 2}
+          disabled={loading || registered || user?.id_rol === 2}
         >
           <Text style={styles.buttonText}>
             {loading
               ? "Guardando..."
-              : registered || user?.idRol === 2
+              : registered || user?.id_rol === 2
               ? "Ya eres socio"
               : "¡Hazme socio!"}
           </Text>

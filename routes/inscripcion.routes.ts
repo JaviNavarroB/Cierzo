@@ -6,4 +6,7 @@ import { authenticateToken } from '../src/middleware/auth.middleware'; // Update
 const router = Router();
 
 router.post('/inscripcionEvento', authenticateToken, InscripcionController.inscribirEnEvento);
+router.post( '/inscripcionEquipo' ,authenticateToken, InscripcionController.inscribirEnEquipo);
+  
 export default router;
+

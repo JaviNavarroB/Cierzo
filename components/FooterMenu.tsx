@@ -16,6 +16,7 @@ import LogoSVG from "../assets/images/LogoSVG.svg";
 import { COLORS } from "@/constants/theme";
 import { RootStackParamList } from "@/@types/routes.types";
 import { useAuthExported } from "@/contexts/AuthContext";
+import { router } from "expo-router";
 
 interface FooterMenuProps {
   style?: StyleProp<ViewStyle>;
@@ -134,7 +135,9 @@ export function FooterMenu({ style, isDark = false }: FooterMenuProps) {
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.userButton, { marginRight: -10 }]}
-          onPress={() => navigation.navigate("profiles", { id: user.id })}
+          onPress={() => {
+            router.push(`/profiles/${user.id}`);
+          }}
         >
           <User size={30} color={iconColor} />
         </TouchableOpacity>
@@ -212,15 +215,18 @@ const styles = StyleSheet.create({
     zIndex: 3,
     width: "100%",
     justifyContent: "space-between",
+    elevation: 6,
   },
   homeButton: {
     width: 37,
     height: 34,
     left: 165,
+    elevation: 7,
   },
   userButton: {
     width: 37,
     height: 34,
     right: 165,
+    elevation: 7,
   },
 });

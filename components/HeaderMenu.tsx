@@ -22,6 +22,7 @@ import type { RootStackParamList } from "@/@types/routes.types";
 import { COLORS } from "@/constants/theme";
 import { Menu, X } from "lucide-react-native";
 import { useAuthExported } from "@/contexts/AuthContext";
+import { router } from "expo-router";
 
 interface HeaderMenuProps {
   isDark?: boolean;
@@ -205,7 +206,7 @@ export function HeaderMenu({ isDark = false }: HeaderMenuProps) {
 
             <TouchableOpacity
               style={[styles.navItem]}
-              onPress={() => navigation.navigate("profiles", { id: user.id })}
+              onPress={() => router.push(`/profiles/${user.id}`)}
             >
               <Text
                 style={[
@@ -373,7 +374,7 @@ export function HeaderMenu({ isDark = false }: HeaderMenuProps) {
                   styles.mobileMenuItem,
                   currentRoute === "profiles" && styles.activeMobileMenuItem,
                 ]}
-                onPress={() => navigation.navigate("profiles", { id: user.id })}
+                onPress={() => router.push(`/profiles/${user.id}`)}
               >
                 <Text
                   style={[

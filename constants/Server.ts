@@ -4,5 +4,5 @@
 
 //export const SERVER_URL = Constants.manifest?.extra?.serverUrl || '/api';
 // config.ts
-const SERVER_URL = 'https://df91-2a00-d100-7291-8800-7848-f9c8-60d5-37f2.ngrok-free.app/api';
+const SERVER_URL = 'https://6707-2a00-d100-7291-8800-e087-3e9e-cddc-7d91.ngrok-free.app/api';
 export default SERVER_URL;

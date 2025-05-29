@@ -6,6 +6,7 @@ import {
   View,
   Text,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Header } from "@/components/Header";
@@ -17,6 +18,7 @@ import { PlayersSlider } from "@/components/PlayersSlider";
 import { COLORS } from "@/constants/theme";
 import { useSport } from "@/hooks/useSport";
 import { usePlayers } from "@/hooks/usePlayers";
+import { useInscripcionEquipo } from "@/hooks/useInscripcionEquipo";
 
 // Definimos el tipo de props que recibe el componente
 interface DeportePageProps {
@@ -33,6 +35,21 @@ export default function DeportePage({ route }: DeportePageProps) {
   /* ------------------------------------------------------------------ */
   const { id: searchId } = useLocalSearchParams();
 
+  const {
+    inscribir,
+    loading: insLoading,
+    error: insError,
+  } = useInscripcionEquipo();
+  const [pwModal, setPwModal] = useState(false);
+  const [password, setPassword] = useState("");
+  const handleInscripcion = async () => {
+    try {
+      await inscribir(sportId, password); // sportId == teamId
+      Alert.alert("¡Inscrito!", "Ahora eres jugador del equipo");
+      setPwModal(false);
+      setPassword("");
+    } catch {}
+  };
   const sportId = useMemo(() => {
     // 1. Route params (React Navigation)
     if (route?.params?.id) return Number(route.params.id);
@@ -65,6 +82,7 @@ export default function DeportePage({ route }: DeportePageProps) {
     players,
     loading: loadingPlayers,
     error: playersError,
+    refetch: refetchPlayers, // ← nuevo
   } = usePlayers(sportId);
 
   // Preparar datos para SeccionHorarios
@@ -137,6 +155,8 @@ export default function DeportePage({ route }: DeportePageProps) {
           pabellon={pabellon}
           texto={texto}
           foto={foto}
+          teamId={sportId}
+          onInscrito={refetchPlayers}
         />
 
         {/* Jugadores */}

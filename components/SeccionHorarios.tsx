@@ -7,12 +7,20 @@ import {
   Platform,
   useWindowDimensions,
   TouchableOpacity,
+  Modal,
+  TextInput,
+  Alert,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FontAwesome } from "@expo/vector-icons";
 import { COLORS } from "@/constants/theme";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from "expo-haptics";
+import { useAuthExported } from "@/contexts/AuthContext";
+import { useInscripcionEquipo } from "@/hooks/useInscripcionEquipo";
+import { useState } from "react";
+import { template } from "@babel/core";
 
 export interface HorarioItem {
   dia: string;
@@ -44,6 +52,8 @@ interface Props {
   pabellon: PabellonInfo;
   texto: Texto;
   foto: string | undefined;
+  teamId: number;
+  onInscrito?: () => void;
 }
 
 export default function SeccionHorarios({
@@ -54,9 +64,28 @@ export default function SeccionHorarios({
   pabellon,
   texto,
   foto,
+  teamId,
+  onInscrito,
 }: Props) {
   const { width } = useWindowDimensions();
   const isMobile = Platform.OS !== "web" || width < 768;
+
+  const { user } = useAuthExported();
+  const isJugador = user?.rol === "jugador";
+  const { inscribir, loading, error } = useInscripcionEquipo();
+
+  /* estado modal */
+  const [modal, setModal] = useState(false);
+  const [password, setPassword] = useState("");
+  const handleJoin = async () => {
+    try {
+      await inscribir(teamId /* ó props.teamId */, password);
+      onInscrito?.();
+      Alert.alert("¡¡Inscrito!!", "Ahora eres jugador del equipo");
+      setModal(false);
+      setPassword("");
+    } catch {}
+  };
 
   const renderContent = () => {
     switch (activeTab) {
@@ -271,31 +300,71 @@ export default function SeccionHorarios({
           </View>
 
           {/* CTA Section remains below */}
-          <View style={styles.ctaSection}>
-            <LinearGradient
-              colors={[COLORS.primary, COLORS.background]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 10, y: 10 }}
-              style={styles.ctaGradient}
-            >
-              <Text style={styles.ctaTitle}>¿Listo para unirte?</Text>
-              <Text style={styles.ctaDescription}>
-                {texto.cta_texto ||
-                  "Forma parte de nuestro equipo y vive la pasión del deporte."}
-              </Text>
-              <TouchableOpacity
-                style={styles.ctaButton}
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                  // Navigate to registration
-                }}
+          {!isJugador && (
+            <View style={styles.ctaSection}>
+              <LinearGradient
+                colors={[COLORS.primary, COLORS.background]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 10, y: 10 }}
+                style={styles.ctaGradient}
               >
-                <Text style={styles.ctaButtonText}>Únete</Text>
-              </TouchableOpacity>
-            </LinearGradient>
-          </View>
+                <Text style={styles.ctaTitle}>¿Listo para unirte?</Text>
+                <Text style={styles.ctaDescription}>
+                  {texto.cta_texto ||
+                    "Forma parte de nuestro equipo y vive la pasión del deporte."}
+                </Text>
+                <TouchableOpacity
+                  style={styles.ctaButton}
+                  onPress={() => setModal(true)}
+                  disabled={loading}
+                >
+                  <Text style={styles.ctaButtonText}>
+                    {" "}
+                    {loading ? "Inscribiendo..." : "Únete"}
+                  </Text>
+                </TouchableOpacity>
+              </LinearGradient>
+            </View>
+          )}
         </View>
       </ScrollView>
+      <Modal
+        visible={modal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <Text style={{ fontSize: 18, marginBottom: 12 }}>
+              Confirma tu contraseña
+            </Text>
+            <TextInput
+              placeholder="Contraseña"
+              secureTextEntry
+              value={password}
+              onChangeText={setPassword}
+              style={styles.modalInput}
+            />
+            {error && <Text style={{ color: "red" }}>{error}</Text>}
+            <View style={{ flexDirection: "row", marginTop: 16 }}>
+              <TouchableOpacity
+                style={styles.modalBtn}
+                onPress={() => setModal(false)}
+              >
+                <Text>Cancelar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalBtn}
+                onPress={handleJoin}
+                disabled={loading}
+              >
+                {loading ? <ActivityIndicator /> : <Text>Confirmar</Text>}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -592,5 +661,72 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     fontSize: 16,
     fontWeight: "600",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalCard: {
+    width: "85%",
+    maxWidth: 400,
+    backgroundColor: COLORS.text.light,
+    borderRadius: 16,
+    paddingVertical: 28,
+    paddingHorizontal: 24,
+    alignItems: "center",
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: COLORS.primary,
+    marginBottom: 18,
+  },
+  modalInput: {
+    width: "100%",
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    height: 48,
+    marginBottom: 14,
+    fontSize: 15,
+    color: COLORS.text.dark,
+  },
+  modalError: {
+    color: COLORS.primary,
+    marginBottom: 8,
+    fontSize: 14,
+  },
+  modalBtnRow: {
+    flexDirection: "row",
+    width: "100%",
+    justifyContent: "space-between",
+    marginTop: 6,
+  },
+  modalBtn: {
+    flex: 1,
+    backgroundColor: COLORS.primary,
+    borderRadius: 1000,
+    height: 46,
+    justifyContent: "center",
+    alignItems: "center",
+    marginHorizontal: 4,
+  },
+  modalBtnOutline: {
+    backgroundColor: "transparent",
+    borderWidth: 1.5,
+    borderColor: COLORS.primary,
+  },
+  modalBtnText: {
+    color: COLORS.text.light,
+    fontWeight: "600",
+    fontSize: 15,
+  },
+  modalBtnTextOutline: {
+    color: COLORS.primary,
+    fontWeight: "600",
+    fontSize: 15,
   },
 });

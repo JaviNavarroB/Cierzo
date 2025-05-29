@@ -17,7 +17,7 @@ export function useUpdateProfile() {
         foto?: string;
         oldPassword?: string;
         newPassword?: string;
-        idRol?: number;
+        id_rol?: number;
     }) => {
         setLoading(true);
         setError(null);

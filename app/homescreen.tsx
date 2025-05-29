@@ -25,6 +25,7 @@ import * as Haptics from "expo-haptics";
 import { StatusBar } from "react-native";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "@/@types/routes.types";
+import { useAuthExported } from "@/contexts/AuthContext";
 
 // Override useLayoutEffect with useEffect on the server
 if (typeof window === "undefined") {
@@ -32,6 +33,8 @@ if (typeof window === "undefined") {
 }
 type Navigation = NavigationProp<RootStackParamList>;
 export default function HomeScreen() {
+  const { user } = useAuthExported(); // ← 1. Usuario actual
+  const isInvitado = !user || user.id_rol === 1; // ← 2. Es invitado
   const { width, height } = useWindowDimensions();
   const isMobile = Platform.OS !== "web" || width < 768;
   const navigation = useNavigation<Navigation>();
@@ -238,31 +241,32 @@ export default function HomeScreen() {
                 Únete a nosotros y descubre el placer de crecer a través del
                 deporte en un ambiente inclusivo y motivador.
               </Animated.Text>
-
-              <Animated.View
-                style={{
-                  opacity: joinAnim,
-                  transform: [
-                    {
-                      translateY: joinAnim.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [20, 0],
-                      }),
-                    },
-                  ],
-                }}
-              >
-                <TouchableOpacity
-                  style={styles.joinButton}
-                  onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                    navigation.navigate("member");
+              {isInvitado && (
+                <Animated.View
+                  style={{
+                    opacity: joinAnim,
+                    transform: [
+                      {
+                        translateY: joinAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [20, 0],
+                        }),
+                      },
+                    ],
                   }}
                 >
-                  <Text style={styles.joinButtonText}>Únete ahora</Text>
-                  <ArrowRight size={18} color={COLORS.text.light} />
-                </TouchableOpacity>
-              </Animated.View>
+                  <TouchableOpacity
+                    style={styles.joinButton}
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                      navigation.navigate("member");
+                    }}
+                  >
+                    <Text style={styles.joinButtonText}>Únete ahora</Text>
+                    <ArrowRight size={18} color={COLORS.text.light} />
+                  </TouchableOpacity>
+                </Animated.View>
+              )}
             </View>
 
             {/* Scroll indicator */}
@@ -393,29 +397,31 @@ export default function HomeScreen() {
           </View>
 
           {/* Call to action section */}
-          <View style={styles.ctaSection}>
-            <LinearGradient
-              colors={[COLORS.primary, "#9a3d2d"]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.ctaGradient}
-            >
-              <Text style={styles.ctaTitle}>¿Listo para unirte?</Text>
-              <Text style={styles.ctaDescription}>
-                Forma parte de nuestra comunidad deportiva y disfruta de todos
-                los beneficios
-              </Text>
-              <TouchableOpacity
-                style={styles.ctaButton}
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                  // Navigate to registration
-                }}
+          {isInvitado && (
+            <View style={styles.ctaSection}>
+              <LinearGradient
+                colors={[COLORS.primary, "#9a3d2d"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.ctaGradient}
               >
-                <Text style={styles.ctaButtonText}>Inscríbete</Text>
-              </TouchableOpacity>
-            </LinearGradient>
-          </View>
+                <Text style={styles.ctaTitle}>¿Listo para unirte?</Text>
+                <Text style={styles.ctaDescription}>
+                  Forma parte de nuestra comunidad deportiva y disfruta de todos
+                  los beneficios
+                </Text>
+                <TouchableOpacity
+                  style={styles.ctaButton}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                    navigation.navigate("member");
+                  }}
+                >
+                  <Text style={styles.ctaButtonText}>Inscríbete</Text>
+                </TouchableOpacity>
+              </LinearGradient>
+            </View>
+          )}
         </Animated.ScrollView>
 
         <FooterMenu style={styles.footerMenu} />

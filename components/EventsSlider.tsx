@@ -20,8 +20,10 @@ import { useAuthExported } from "@/contexts/AuthContext"; // Import your auth co
 
 const windowWidth = Dimensions.get("window").width;
 const isMobile = Platform.OS !== "web" || windowWidth < 768;
-const { user } = useAuthExported(); // o tu contexto de auth
+
 export function EventsSlider(): JSX.Element {
+  const { user } = useAuthExported(); // o tu contexto de auth
+  console.log("→ render EventsSlider. user.rol =", user?.rol); // 👈
   const cardWidth = 325;
   const cardHeight = 475;
   const progress = useSharedValue<number>(0);

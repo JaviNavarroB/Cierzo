@@ -81,7 +81,7 @@ export class UsuarioController {
       }
 
       // Campos del body
-      const { nombre, apellidos, correo, foto, oldPassword, newPassword, genero, telefono, idRol } = req.body;
+      const { nombre, apellidos, correo, foto, oldPassword, newPassword, genero, telefono, id_rol } = req.body;
 
       const updateFields: any = {};
 
@@ -106,7 +106,7 @@ export class UsuarioController {
         if (foto !== undefined) updateFields.foto = foto;
 if (genero !== undefined) updateFields.genero = genero;
 if (telefono !== undefined) updateFields.telefono = telefono;
-        if (idRol !== undefined && idRol === 2) updateFields.idRol = 2;
+        if (id_rol !== undefined && id_rol === 2) updateFields.id_rol = 2;
         
 
       // Si el usuario quiere cambiar la contraseña

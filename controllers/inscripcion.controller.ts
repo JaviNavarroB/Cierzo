@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import pool from '../database/database';
 import Usuario from '../models/usuario.model';
+import { RowDataPacket } from 'mysql2';
 
 export class InscripcionController {
   /** POST /inscripcion */
@@ -79,5 +80,66 @@ export class InscripcionController {
       console.error('inscribirEnEvento:', err);
       res.status(500).json({ error: 'Error al inscribir en el evento' });
     }
-  }
-}
+    }
+    
+    static async inscribirEnEquipo(req: Request, res: Response): Promise<void> {
+        try {
+          const userId = req.user?.id;
+          if (!userId) {
+            res.status(401).json({ error: "No auth" });
+            return;
+          }
+    
+          const { teamId, password } = req.body;
+          if (!teamId || !password) {
+            res.status(400).json({ error: "Faltan datos" });
+            return;
+          }
+    
+          /* 1. Verifica contraseña */
+          const user = await Usuario.getUsuarioById(userId);
+          if (!user) {
+            res.status(404).json({ error: "Usuario no encontrado" });
+            return;
+          }
+          const ok = await bcrypt.compare(password, user.contrasenya);
+          if (!ok) {
+            res.status(401).json({ error: "Contraseña incorrecta" });
+            return;
+          }
+    
+          /* 2. ¿Ya inscrito? */
+          const [exists] = await pool.query<RowDataPacket[]>(
+            `SELECT 1 FROM inscripcion_equipo
+             WHERE id_usuario = ? AND id_equipo = ?
+               AND estado_inscripcion = 'Inscrito'`,
+            [userId, teamId]
+          );
+          if (exists.length) {
+            res.status(409).json({ error: "Ya inscrito en este equipo" });
+            return;
+          }
+    
+          /* 3. Insertar inscripción */
+          await pool.query(
+            `INSERT INTO inscripcion_equipo
+             (id_usuario, id_equipo, fecha_inicio, estado_inscripcion)
+             VALUES (?, ?, CURDATE(), 'Inscrito')`,
+            [userId, teamId]
+          );
+    
+          /* 4. Cambiar rol a jugador (3) si era 1 o 2 */
+          let updated = user;
+          if (user.id_rol === 1 || user.id_rol === 2) {
+            updated = await Usuario.updateProfile(userId, { id_rol: 3 });
+          }
+          delete (updated as any).contrasenya;
+    
+          res.json({ success: true, user: updated });
+        } catch (err) {
+          console.error("inscribirEnEquipo:", err);
+          res.status(500).json({ error: "Error al inscribirse en el equipo" });
+        }
+      }
+    }
+

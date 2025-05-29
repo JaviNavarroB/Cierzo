@@ -8,7 +8,7 @@ export type RootStackParamList = {
     authscreen: undefined;
     eventos: undefined;
     deportes: undefined;
-    profiles: { id: number };
-    becomemember: undefined;
+    profiles:       { id: number } | undefined;
+    member: undefined;
     // ... add any other routes you use
   };

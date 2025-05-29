@@ -23,6 +23,7 @@ function mapIdRolToRolString(id_rol: number | string | undefined): string {
       return "desconocido";
   }
 }
+// Helper para mapear id_rol a string
 
 interface AuthContextType {
   token: string | null;
@@ -48,9 +49,8 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // Esta función garantiza que el usuario siempre tiene un campo `rol`
   function normalizeUser(userData: any) {
     if (!userData) return userData;
-    // Si ya tiene campo "rol", usa el existente, si no, lo mapea.
-    const rol =
-      userData.rol || mapIdRolToRolString(userData.id_rol || userData.idRol);
+    // ⚠️ Siempre recalcula, sin fiarse de userData.rol
+    const rol = mapIdRolToRolString(userData.id_rol ?? userData.id_rol);
     return { ...userData, rol };
   }
 
