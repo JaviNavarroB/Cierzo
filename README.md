@@ -1,13 +1,8 @@
-# Aplicación Móvil para Asociación Deportiva ⚽
+# Aplicación Móvil para A.D. Cierzo ⚽📱
 
-[![React Native](https://img.shields.io/badge/React%20Native-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactnative.dev/)
-[![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
-[![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com/)
+Bienvenido al repositorio de mi **Proyecto de Fin de Ciclo (PFC)**. El objetivo es crear una **aplicación móvil multiplataforma** para **A.D. Cierzo**, una asociación deportiva situada en Zaragoza, que mejore la gestión interna del club y refuerce su presencia digital, atrayendo a nuevos socios y simplificando la comunicación entre sus miembros.
 
-Bienvenidos al repositorio de nuestro proyecto final de grado. En este proyecto, hemos desarrollado una **Aplicación Móvil para una Asociación Deportiva** con el fin de modernizar su imagen digital, ampliar su alcance online y fomentar una comunicación efectiva entre sus miembros.
 
----
 
 ## Índice 👉
 
@@ -17,86 +12,71 @@ Bienvenidos al repositorio de nuestro proyecto final de grado. En este proyecto,
 4. [Arquitectura del Proyecto](#arquitectura-del-proyecto)
 5. [Futuras Funcionalidades](#futuras-funcionalidades)
 
----
+
 
 ## Motivación y Objetivos 🚀
 
-En este proyecto, hemos trabajado para **mejorar la presencia digital** de una asociación deportiva. Nuestros objetivos principales son:
+* **Modernizar la imagen** del club y centralizar su información.
+* **Optimizar la gestión interna** (usuarios, equipos, eventos y actividades).
+* **Facilitar inscripciones en línea** y mejorar la comunicación entre administradores, entrenadores, jugadores y visitantes.
+* **Incrementar la participación** y visibilidad del club.
 
-- **Modernizar la imagen** de la asociación.
-- **Aumentar la interacción** y comunicación interna.
-- **Facilitar la inscripción** a eventos y actividades deportivas.
-- **Ofrecer una experiencia de usuario** intuitiva y atractiva.
 
-Esta iniciativa busca fortalecer la identidad de la marca y conectar a los miembros a través de una plataforma digital dinámica y accesible.
-
----
 
 ## Características del Proyecto ✨
 
-- **Páginas Informativas:** Página principal, quiénes somos, deportes, eventos, galería multimedia y publicaciones.
-- **Gestión de Usuarios:** Registro, inicio y cierre de sesión, y opción para eliminar cuenta.
-- **Funcionalidades de Inscripción:** Permite a los usuarios inscribirse en deportes y eventos, gestionar y cancelar inscripciones.
-- **Integración Full-Stack:** Desarrollo coordinado del front-end y back-end con conexión a una base de datos robusta.
+* **Secciones informativas:** Inicio, quiénes somos, deportes (voleibol, baloncesto, fútbol, natación), resultados y clasificaciones, galería multimedia y noticias.
+* **Gestión de usuarios y roles:** Administrador, entrenador, jugador y visitante.
+* **Inscripciones en línea:** Usuarios pueden registrarse en eventos y equipos, así como darse de baja.
+* **Notificaciones push:** Mantiene a los miembros informados de eventos y resultados en tiempo real.
+* **Integraciones externas:** Enlaces directos a Instagram y WhatsApp del club.
 
----
+
 
 ## Tecnologías y Herramientas 🔧
 
-Utilizamos las siguientes tecnologías:
+| Capa              | Tecnologías                                      | Versión/Notas                   |
+| ----------------- | ------------------------------------------------ | ------------------------------- |
+| **Front‑End**     | Expo, React Native, TypeScript                   | Expo 46.x · React Native 0.70.x |
+| **Back‑End**      | Node.js 18.x, Express 4.18.2                     | REST API                        |
+| **Base de Datos** | MySQL 8 · Sequelize 6.31                         | ORM mySQL2 3.12                 |
+| **Dev & Ops**     | Visual Studio Code, Git + GitHub, Ngrok, Postman |                                 |
+| **Diseño**        | Figma (mockups), PlantUML (diagramas)            |                                 |
 
-- **Front-End:**
-  - [React Native](https://reactnative.dev/) con Expo
-  - [![Aprende Expo](https://img.youtube.com/vi/m1-bc53EGh8/0.jpg)](https://www.youtube.com/watch?v=m1-bc53EGh8)
 
-  - HTML, CSS y JavaScript/TypeScript
-- **Back-End:**
-  - [Node.js](https://nodejs.org/)
-- **Base de Datos:**
-  - [PostgreSQL](https://www.postgresql.org/) o [Firebase](https://firebase.google.com/)
-
-Algunos de nuestros badges representativos:
-
-![React Native](https://img.shields.io/badge/React%20Native-20232A?style=flat&logo=react)
-![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript)  
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-336791?style=flat&logo=postgresql)  
-![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=flat&logo=firebase)
-
----
 
 ## Arquitectura del Proyecto 🏛️
 
-A continuación, presentamos un diagrama que ilustra la arquitectura general de nuestra aplicación:
-
 ```mermaid
 graph TB
-    A[Interfaz de Usuario<br/>React Native] --> B[Servidor Back-End<br/>Node.js]
-    B --> C[Base de Datos<br/>PostgreSQL / Firebase]
-    B --> D[Servicios de<br/>Autenticación]
+    A[Interfaz de Usuario<br/>React Native] --> B[Servidor Back‑End<br/>Express]
+    B --> C[Base de Datos<br/>MySQL]
+    B --> D[Servicios de<br/>Autenticación JWT]
     A --> E[API de<br/>Inscripciones]
     style A fill:#61DAFB,stroke:#20232A,color:#20232A
-    style B fill:#339933,stroke:#1F1F1F,color:#FFFFFF
-    style C fill:#336791,stroke:#1F1F1F,color:#FFFFFF
+    style B fill:#404D59,stroke:#1F1F1F,color:#FFFFFF
+    style C fill:#4479A1,stroke:#1F1F1F,color:#FFFFFF
     style D fill:#FFCA28,stroke:#1F1F1F,color:#1F1F1F
     style E fill:#FF4081,stroke:#1F1F1F,color:#FFFFFF
 ```
 
-**Descripción del Diagrama:**
+### Descripción de la Arquitectura
 
-- **Interfaz de Usuario:** Desarrollada en React Native, ofrece una experiencia móvil moderna y atractiva.
-- **Servidor Back-End:** Implementado en Node.js, se encarga de la lógica de negocio, autenticación y operaciones CRUD.
-- **Base de Datos:** Utilizamos PostgreSQL o Firebase para almacenar datos de usuarios, deportes, eventos e inscripciones.
-- **API de Inscripciones:** Facilita la interacción de los usuarios con la plataforma de forma fluida.
+* **Interfaz de Usuario:** Construida en Expo + React Native con TypeScript para una experiencia móvil fluida.
+* **Servidor Back‑End:** API REST en Node.js/Express que implementa la lógica de negocio y la autenticación con JWT.
+* **Base de Datos:** MySQL 8 gestionada con Sequelize para almacenar usuarios, deportes, eventos e inscripciones.
+* **API de Inscripciones:** Punto de entrada seguro para altas, bajas y consultas de inscripciones.
 
----
+
 
 ## Futuras Funcionalidades 💡
 
-Entre las mejoras que planeamos implementar se encuentran:
+* Resultados y calendarios actualizados en tiempo real.
+* Soporte multilingüe (ES/EN/FR).
+* Implementación de HTTPS y medidas anti‑XSS, CSRF y SQL Injection.
+* Gestión de contenido avanzada para administradores.
+* Tienda online y pasarela de pago (fase posterior).
 
-- Información en tiempo real sobre resultados, calendarios y eventos.
-- Soporte multilingüe (español, inglés y francés).
-- Mayor seguridad mediante HTTPS y medidas contra XSS, CSRF y SQL injection.
-- Gestión de roles (administrador, entrenador, jugador y visitante).
-- Funcionalidad de gestión de contenido para administradores.
-- Integración de tienda online y pasarelas de pago según la evolución del proyecto.
+
+
+> *Proyecto desarrollado por ****Javier Navarro Bovio**** para el ciclo 2º DAM DUAL (CPIFP Los Enlaces).*
