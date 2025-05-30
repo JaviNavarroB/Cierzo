@@ -17,6 +17,7 @@ import { COLORS } from "@/constants/theme";
 import { useEvents } from "@/hooks/useEvents";
 import { useRouter } from "expo-router"; // Import useRouter for navigation
 import { useAuthExported } from "@/contexts/AuthContext"; // Import your auth context
+import { Image as ExpoImage } from "expo-image";
 
 const windowWidth = Dimensions.get("window").width;
 const isMobile = Platform.OS !== "web" || windowWidth < 768;
@@ -72,7 +73,7 @@ export function EventsSlider(): JSX.Element {
   const dataForCarousel = eventosAdmitidos.map((evt) => ({
     id: evt.id.toString(),
     // Replace this placeholder image with your event image URL when ready:
-    image: require("../assets/images/Poster1.jpeg"),
+    image: evt.foto ?? require("../assets/images/Poster1.jpeg"),
     name: evt.titulo || "Evento sin título",
   }));
   if (eventosAdmitidos.length === 0) {
@@ -114,7 +115,7 @@ export function EventsSlider(): JSX.Element {
             <View style={styles.card}>
               {item.image ? (
                 <View style={{ flex: 1 }}>
-                  <Image
+                  <ExpoImage
                     source={item.image}
                     style={styles.playerImage}
                     resizeMode="cover"

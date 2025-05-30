@@ -24,6 +24,7 @@ class Event extends Model {
     public creado_en?: Date;
     public roles_admitidos?: string;
     public inscritos?: number; // number of registered users
+    public foto?: string; // URL of the event photo
 
     
 
@@ -67,6 +68,7 @@ class Event extends Model {
                 direccion: evento.direccion,
                 fecha_limite_inscripcion: evento.fecha_limite_inscripcion,
                 roles_admitidos: evento.roles_admitidos,
+                foto: evento.foto
        
             })) || [];
         } catch (error) {

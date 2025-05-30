@@ -20,7 +20,9 @@ import * as Haptics from "expo-haptics";
 import { useAuthExported } from "@/contexts/AuthContext";
 import { useInscripcionEquipo } from "@/hooks/useInscripcionEquipo";
 import { useState } from "react";
-import { template } from "@babel/core";
+import { Image as ExpoImage } from "expo-image";
+import React, { useEffect } from "react";
+import { CrossPlatformMap } from "@/components/CrossPlatformMap";
 
 export interface HorarioItem {
   dia: string;
@@ -32,6 +34,8 @@ export interface PabellonInfo {
   direccion: string;
   descripcion: string;
   imagenUri?: string;
+  latitud?: number;
+  longitud?: number;
 }
 
 export interface CuotasInfo {
@@ -51,9 +55,13 @@ interface Props {
   cuotas: CuotasInfo;
   pabellon: PabellonInfo;
   texto: Texto;
-  foto: string | undefined;
+  foto: string;
   teamId: number;
   onInscrito?: () => void;
+  coordenadas: {
+    latitud: number;
+    longitud: number;
+  };
 }
 
 export default function SeccionHorarios({
@@ -66,6 +74,7 @@ export default function SeccionHorarios({
   foto,
   teamId,
   onInscrito,
+  coordenadas,
 }: Props) {
   const { width } = useWindowDimensions();
   const isMobile = Platform.OS !== "web" || width < 768;
@@ -92,23 +101,20 @@ export default function SeccionHorarios({
       case "pabellon":
         return (
           <View style={styles.pabellonContainer}>
-            <View style={styles.pabellonImageContainer}>
-              <Image
-                source={{
-                  uri:
-                    pabellon.imagenUri ||
-                    require("../assets/images/pabellon.jpg"),
-                }}
-                style={styles.pabellonImage}
-                resizeMode="cover"
-              />
-            </View>
             <View style={styles.pabellonInfo}>
               <Text style={styles.pabellonTitle}>{pabellon.nombre}</Text>
               <Text style={styles.pabellonAddress}>{pabellon.direccion}</Text>
               <Text style={styles.pabellonDescription}>
                 {pabellon.descripcion}
               </Text>
+            </View>
+            <View style={styles.pabellonImageContainer}>
+              <CrossPlatformMap
+                lat={coordenadas.latitud}
+                lng={coordenadas.longitud}
+                zoom={14}
+                style={styles.pabellonMap}
+              />
             </View>
           </View>
         );
@@ -212,10 +218,8 @@ export default function SeccionHorarios({
                   styles.imageSectionMobileTopMargin,
                 ]}
               >
-                <Image
-                  source={{
-                    uri: foto,
-                  }}
+                <ExpoImage
+                  source={foto ? { uri: foto } : undefined}
                   style={styles.image}
                   resizeMode="cover"
                 />
@@ -274,10 +278,14 @@ export default function SeccionHorarios({
 
             {!isMobile && (
               <View style={[styles.imageSection, styles.imageSectionMobile]}>
-                <Image
-                  source={{
-                    uri: "https://www.walashop.com/storyblok/f/191463/768x450/9811023932/basquet-mobile.jpg",
-                  }}
+                <ExpoImage
+                  source={
+                    foto
+                      ? { uri: foto }
+                      : {
+                          uri: "https://www.walashop.com/storyblok/f/191463/768x450/9811023932/basquet-mobile.jpg",
+                        }
+                  }
                   style={styles.image}
                   resizeMode="cover"
                 />
@@ -583,22 +591,24 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     tintColor: COLORS.primary,
   },
-  // New styles for Pabellon section
-  pabellonContainer: {},
+  // New styles for Pabe
+  // llon section
+  pabellonContainer: {
+    flex: 1,
+  },
   pabellonImageContainer: {
     width: "100%",
-    height: 300, // Ajusta la altura del contenedor
-    overflow: "hidden", // Asegura que la imagen no se desborde
+    height: 300,
     borderRadius: 12,
-    marginBottom: 16,
+    overflow: "hidden",
     borderWidth: 1,
     borderColor: COLORS.primary,
     marginTop: 16,
   },
-  pabellonImage: {
+  pabellonMap: {
     width: "100%",
     height: "100%",
-    transform: [{ scale: 1.5 }], // Ajusta el zoom de la imagen
+    borderRadius: 12,
   },
   pabellonInfo: {
     padding: 8,
@@ -619,6 +629,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 24,
     color: `${COLORS.primary}CC`,
+  },
+  pabellonMapContainer: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 12,
+    overflow: "hidden",
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
   },
   // New CTA styles:
   ctaSection: {

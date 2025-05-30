@@ -27,11 +27,12 @@ const app = express();
 app.use(cors());
 
 // Middleware para parsear JSON y datos de formularios
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json({ limit: "5mb" }));
+app.use(bodyParser.urlencoded({ limit: "5mb", extended: true }))
 
 // Rutas API (se montan con el prefijo /api)
-
+app.use(express.json({ limit: "5mb" }));
+app.use(express.urlencoded({ limit: "5mb", extended: true }));
 
 // Servir estáticamente las fotos de jugadores:
 //   – carpeta física: <proyecto>/assets/images/players/

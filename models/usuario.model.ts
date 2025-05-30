@@ -203,7 +203,8 @@ Usuario.init(
       allowNull: false,
       field: 'contrasenya'
     },
-    foto: { type: DataTypes.STRING, field: 'foto' },
+    foto: { type: DataTypes.TEXT("long"), field: "foto" },
+
     rol:
     {
       type: DataTypes.STRING, allowNull: false,

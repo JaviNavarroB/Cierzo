@@ -16,6 +16,7 @@ import { useRouter } from "expo-router";
 import { useEquipos, EquipoItem } from "@/hooks/useEquipos";
 import SERVER_URL from "@/constants/Server";
 import { COLORS } from "@/constants/theme";
+import { Image as ExpoImage } from "expo-image";
 
 interface Props {
   scrollRef?: React.RefObject<any>;
@@ -41,7 +42,7 @@ export function SportSlider({ scrollRef }: Props) {
         snapToAlignment="start"
       >
         {equipos.map((team: EquipoItem) => {
-          const uri = `/sports/${team.foto}`;
+          const uri = team.foto;
           console.log(`Loading image: ${uri}`);
 
           return (
@@ -52,14 +53,14 @@ export function SportSlider({ scrollRef }: Props) {
               activeOpacity={0.8}
             >
               {team.foto ? (
-                <Image
-                  source={{ uri: team.foto }}
+                <ExpoImage
+                  source={team.foto ?? { uri: team.foto }}
                   style={styles.playerImage}
                   resizeMode="cover"
                   onError={(e) =>
                     console.warn(
                       `Error loading image for team ${team.id}:`,
-                      e.nativeEvent.error
+                      e.error
                     )
                   }
                 />

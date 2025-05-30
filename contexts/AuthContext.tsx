@@ -76,6 +76,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setIsAuthenticated(false);
     } catch (error) {
       console.error("Error removing auth data:", error);
+      throw error; // Propagar el error para manejarlo en el componente
     }
   };
 

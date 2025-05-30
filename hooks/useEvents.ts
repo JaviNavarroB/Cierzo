@@ -13,6 +13,7 @@ export interface EventType {
   direccion?: string;
     fecha_limite_inscripcion?: string;
     roles_admitidos?: string;
+    foto?: string; // URL of the event photo
   // ... etc. add more fields as needed
 }
 

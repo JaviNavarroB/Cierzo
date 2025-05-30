@@ -34,8 +34,10 @@ import { useLocalSearchParams } from "expo-router";
 import { useEvent, EventData } from "../../hooks/useEvent";
 import { LeafletMap } from "@/components/LeafletMap";
 import { CrossPlatformMap } from "../../components/CrossPlatformMap";
+import { Image as ExpoImage } from "expo-image";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
+const { height: SCREEN_WIDTH } = Dimensions.get("window");
 
 export default function EventScreen() {
   // Obtener ID desde URL
@@ -50,6 +52,7 @@ export default function EventScreen() {
   const scaleAnim = useRef(new Animated.Value(0.95)).current;
   const capacityWidthAnim = useRef(new Animated.Value(0)).current;
   const [expandedFaq, setExpandedFaq] = useState<null | number>(null);
+  const [loaded, setLoaded] = useState(false);
   const {
     inscribirseEnEvento,
     loading: inscLoading,
@@ -163,6 +166,7 @@ export default function EventScreen() {
       ? new Date(event.creado_en).toLocaleDateString()
       : "",
     inscritos: event.inscritos || 0,
+    foto: event.foto || "",
   };
 
   const openInGoogleMaps = async (
@@ -228,10 +232,10 @@ export default function EventScreen() {
       >
         {/* Hero Section */}
         <View style={styles.heroContainer}>
-          <Image
-            source={require("../../assets/images/Poster1.jpeg")}
+          <ExpoImage
+            source={event.foto ?? require("../../assets/images/Poster1.jpeg")}
             style={styles.heroImage}
-            resizeMode="cover"
+            contentFit="cover"
           />
           <LinearGradient
             colors={["transparent", "rgba(0,0,0,0.7)"]}

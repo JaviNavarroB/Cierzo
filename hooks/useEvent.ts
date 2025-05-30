@@ -21,7 +21,8 @@ export interface EventData {
   faqs?: any;
     creado_en?: string;
     roles_admitidos?: string;
-    inscritos?: number; // number of registered users
+    inscritos?: number;
+    foto?: string;// number of registered users
 }
 
 export function useEvent(id: number) {

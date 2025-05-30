@@ -103,7 +103,10 @@ export default function DeportePage({ route }: DeportePageProps) {
     cta_titulo: sport?.cta_titulo || "",
     cta_texto: sport?.cta_texto || "",
   };
-
+  const coordenadas = {
+    latitud: sport?.latitud || 0,
+    longitud: sport?.longitud || 0,
+  };
   const foto =
     sport?.foto ||
     "https://www.walashop.com/storyblok/f/191463/768x450/9811023932/basquet-mobile.jpg"; // Imagen por defecto
@@ -157,6 +160,7 @@ export default function DeportePage({ route }: DeportePageProps) {
           foto={foto}
           teamId={sportId}
           onInscrito={refetchPlayers}
+          coordenadas={coordenadas}
         />
 
         {/* Jugadores */}

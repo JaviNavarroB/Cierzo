@@ -4,5 +4,5 @@
 
 //export const SERVER_URL = Constants.manifest?.extra?.serverUrl || '/api';
 // config.ts
-const SERVER_URL = 'https://cierzo.turtlesco.com/api';
+const SERVER_URL = 'https://85dcf0d42b10.ngrok.app/api' //https://cierzo.turtlesco.com/api';
 export default SERVER_URL;

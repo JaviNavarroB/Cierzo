@@ -11,13 +11,16 @@ import {
   Dimensions,
   ActivityIndicator,
   Modal,
+  Platform,
 } from "react-native";
+import * as ImagePicker from "expo-image-picker";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { HeaderMenu } from "@/components/HeaderMenu";
 import { FooterMenu } from "@/components/FooterMenu";
 import { COLORS } from "@/constants/theme";
 import { useAuthExported } from "@/contexts/AuthContext";
 import { useUpdateProfile, useLoadProfile } from "@/hooks/useProfiles";
+import { useRouter } from "expo-router";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const PROFILE_CIRCLE_SIZE = 120;
@@ -29,6 +32,7 @@ const BUTTON_HEIGHT = 52;
 const LABEL_WIDTH = 80;
 
 export default function Profile() {
+  const router = useRouter();
   const { logout } = useAuthExported();
   const { updateProfile, loading: updating, error } = useUpdateProfile();
   const {
@@ -41,35 +45,76 @@ export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  // Campos editables (sincronizados con los datos del backend)
+  // Campos editables
   const [nombre, setNombre] = useState("");
   const [apellidos, setApellidos] = useState("");
   const [email, setEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  // Modal para contraseña actual
+  // Password modal
   const [showModal, setShowModal] = useState(false);
   const [oldPassword, setOldPassword] = useState("");
 
-  // Al cargar perfil, pon los datos en los campos editables
+  // Imagen
+  const [imageUri, setImageUri] = useState<string | null>(null);
+  const [photoBase64, setPhotoBase64] = useState<string | null>(null);
+
+  /* ------- Cargar perfil ------- */
   useEffect(() => {
     if (profile) {
       setNombre(profile.nombre || "");
       setApellidos(profile.apellidos || "");
       setEmail(profile.correo || "");
+      setImageUri(profile.foto || null);
     }
   }, [profile]);
 
+  /* ------- Image Picker ------- */
+  const pickImage = async () => {
+    try {
+      // Permisos (no es necesario en Web)
+      if (Platform.OS !== "web") {
+        const { status } =
+          await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== "granted") {
+          Alert.alert(
+            "Permiso requerido",
+            "Necesitas permitir acceso a tu galería para seleccionar una foto."
+          );
+          return;
+        }
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        quality: 0.7,
+        base64: true,
+      });
+
+      if (!result.canceled) {
+        const asset = result.assets[0];
+        setImageUri(asset.uri);
+        setPhotoBase64(`data:image/jpeg;base64,${asset.base64}`);
+      }
+    } catch (err: any) {
+      Alert.alert("Error", err.message ?? "No se pudo seleccionar la imagen");
+    }
+  };
+
+  /* ------- Cancelar edición ------- */
   const handleCancelEdit = () => {
     setEmail(profile?.correo || "");
     setNewPassword("");
     setConfirmPassword("");
+    setImageUri(profile?.foto || null);
+    setPhotoBase64(null);
     setIsEditing(false);
     setSuccessMsg(null);
   };
 
-  // Si pulsa guardar, primero pide contraseña con modal
+  /* ------- Intentar guardar (muestra modal) ------- */
   const handleTrySave = () => {
     if (newPassword && newPassword !== confirmPassword) {
       Alert.alert("Error", "Las contraseñas nuevas no coinciden");
@@ -78,27 +123,48 @@ export default function Profile() {
     setShowModal(true);
   };
 
-  // Cuando confirma el modal con la contraseña actual
+  /* ------- Guardar ------- */
   const handleSave = async () => {
     setSuccessMsg(null);
     setShowModal(false);
+
+    const fields: {
+      correo?: string;
+      foto?: string;
+      oldPassword: string;
+      newPassword?: string;
+    } = {
+      correo: email,
+      oldPassword,
+    };
+    if (newPassword) fields.newPassword = newPassword;
+    if (photoBase64) fields.foto = photoBase64; // solo enviamos si cambió
+
     try {
-      const resp = await updateProfile({
-        correo: email,
-        ...(newPassword ? { oldPassword, newPassword } : { oldPassword }),
-      });
+      const resp = await updateProfile(fields);
       setSuccessMsg("Perfil actualizado correctamente");
       setIsEditing(false);
       setOldPassword("");
       setNewPassword("");
       setConfirmPassword("");
-      // Actualiza los datos del perfil después de guardar
+      setPhotoBase64(null);
       if (resp?.user) setProfile(resp.user);
-    } catch (err) {
-      // El error lo muestra el hook
+    } catch (_) {
+      /* el hook ya maneja error */
     }
   };
 
+  /* ------- Cerrar sesión ------- */
+  const handleLogout = async () => {
+    try {
+      await logout(); // Elimina el token y datos de usuario
+      router.replace("/authscreen"); // Redirige a la pantalla de autenticación
+    } catch (err) {
+      console.error("Error al cerrar sesión:", err);
+    }
+  };
+
+  /* ---------------- Render ----------------- */
   if (loadingProfile) return <ActivityIndicator style={{ marginTop: 100 }} />;
   if (errorProfile)
     return <Text style={{ color: "red", marginTop: 100 }}>{errorProfile}</Text>;
@@ -108,31 +174,43 @@ export default function Profile() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <HeaderMenu isDark={false} />
+
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.mainWhiteArea} />
 
-        {/* Profile Circle */}
-        <View
-          style={
-            isEditing
-              ? [
-                  styles.profileCircleContainer,
-                  { backgroundColor: COLORS.dots.active.darkish },
-                ]
-              : styles.profileCircleContainer
-          }
-        >
-          <Image
-            style={styles.profileCircleInner}
-            source={
-              profile.foto
-                ? { uri: profile.foto }
-                : require("../../assets/images/kurokoProfile.jpeg")
-            }
-          />
-        </View>
+        {/* -------- Profile Picture -------- */}
+        {isEditing ? (
+          <TouchableOpacity
+            style={[
+              styles.profileCircleContainer,
+              { backgroundColor: COLORS.dots.active.darkish },
+            ]}
+            activeOpacity={0.8}
+            onPress={pickImage}
+          >
+            <Image
+              style={styles.profileCircleInner}
+              source={
+                imageUri
+                  ? { uri: imageUri }
+                  : require("../../assets/images/kurokoProfile.jpeg")
+              }
+            />
+          </TouchableOpacity>
+        ) : (
+          <View style={styles.profileCircleContainer}>
+            <Image
+              style={styles.profileCircleInner}
+              source={
+                imageUri
+                  ? { uri: imageUri }
+                  : require("../../assets/images/kurokoProfile.jpeg")
+              }
+            />
+          </View>
+        )}
 
-        {/* Nombre (no editable) */}
+        {/* -------- Nombre (no editable) -------- */}
         <TextInput
           style={[styles.input, { top: 266 }]}
           value={nombre}
@@ -145,7 +223,7 @@ export default function Profile() {
         />
         <Text style={[styles.inputLabel, { top: 258 }]}>Nombre</Text>
 
-        {/* Apellidos (no editable) */}
+        {/* -------- Apellidos (no editable) -------- */}
         <TextInput
           style={[styles.input, { top: 343 }]}
           value={apellidos}
@@ -158,7 +236,7 @@ export default function Profile() {
         />
         <Text style={[styles.inputLabel, { top: 335 }]}>Apellidos</Text>
 
-        {/* Email */}
+        {/* -------- Email -------- */}
         <TextInput
           style={[
             styles.input,
@@ -183,7 +261,7 @@ export default function Profile() {
         />
         <Text style={[styles.inputLabel, { top: 412 }]}>Email</Text>
 
-        {/* Contraseña */}
+        {/* -------- Contraseña -------- */}
         {isEditing ? (
           <>
             <TextInput
@@ -237,7 +315,8 @@ export default function Profile() {
           </>
         )}
         <Text style={[styles.inputLabel, { top: 489 }]}>Contraseña</Text>
-        {/* Botones */}
+
+        {/* -------- Botones -------- */}
         <TouchableOpacity
           style={[styles.buttonSave, { top: isEditing ? 651 : 574 }]}
           onPress={isEditing ? handleTrySave : () => setIsEditing(true)}
@@ -253,7 +332,7 @@ export default function Profile() {
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.buttonExit, { top: isEditing ? 651 : 574 }]}
-          onPress={isEditing ? handleCancelEdit : logout}
+          onPress={isEditing ? handleCancelEdit : handleLogout}
           disabled={updating}
         >
           <Text style={styles.exitText}>
@@ -261,6 +340,7 @@ export default function Profile() {
           </Text>
         </TouchableOpacity>
 
+        {/* -------- Mensajes -------- */}
         {successMsg && (
           <Text
             style={{
@@ -287,9 +367,10 @@ export default function Profile() {
           <ActivityIndicator style={{ marginTop: isEditing ? 730 : 690 }} />
         )}
       </ScrollView>
+
       <FooterMenu style={styles.footerMenu} isDark={false} />
 
-      {/* Modal para contraseña actual */}
+      {/* -------- Modal contraseña actual -------- */}
       <Modal
         visible={showModal}
         transparent

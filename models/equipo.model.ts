@@ -21,6 +21,8 @@ interface EquipoRow extends RowDataPacket {
   cuota_mensual: number;
     cuota_anual_federacion: number;
     foto?: string | undefined;
+    latitud?: number | undefined;  // if your model includes it
+    longitud?: number | undefined; // if your model includes it
 }
 
 interface InscRow extends RowDataPacket {
@@ -55,7 +57,7 @@ class Equipo {
       id: r.id,
       nombre: r.nombre,
         nombre_deporte_abv: r.nombre_deporte_abv,
-        foto: r.foto ? `/sports/${r.foto}` : undefined,
+        foto: r.foto,
     }));
   }
 
@@ -127,7 +129,9 @@ class Equipo {
       cuota_mensual: Number(r.cuota_mensual),
       cuota_anual_federacion: Number(r.cuota_anual_federacion),
         creado_en: r.creado_en.toISOString(),
-      foto: r.foto ? `/sports/${r.foto}` : undefined,
+        foto: r.foto,
+        latitud: r.latitud,
+        longitud: r.longitud,
     };
   }
 
@@ -149,7 +153,7 @@ class Equipo {
     return rows.map(r => ({
       id_usuario: r.id_usuario,
         nombre: r.nombre,
-        foto: r.foto ? `/players/${r.foto}` : undefined,
+        foto: r.foto //? `/players/${r.foto}` : undefined,
     }));
   }
 }
